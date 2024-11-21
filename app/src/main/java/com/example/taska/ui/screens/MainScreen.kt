@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -62,6 +63,7 @@ import com.example.taska.data.Task
 import com.example.taska.model.date.Day
 import com.example.taska.ui.theme.AquaSpring
 import com.example.taska.ui.theme.BattleshipGrey
+import com.example.taska.ui.theme.Brick
 import com.example.taska.ui.theme.FruitSalad
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -216,11 +218,14 @@ fun TasksField(
     }
 
     LazyColumn(
-        modifier = modifier.padding(12.dp).fillMaxSize()
+        modifier = modifier
+            .padding(12.dp)
+            .fillMaxSize()
     ) {
         itemsIndexed(displayedTasks, key = { _, task -> task.id }) { i, task ->
-            Box(Modifier.height(100.dp)) {
+            Box {
                 var isVisible by rememberSaveable{ mutableStateOf(false) }
+                var progress by remember { mutableStateOf(0f) }
 
                 LaunchedEffect(Unit) {
                     delay(75L * i)
@@ -234,7 +239,7 @@ fun TasksField(
                 ) {
                     val dismissState = rememberSwipeToDismissBoxState(
                         confirmValueChange = {
-                            if (it == SwipeToDismissBoxValue.EndToStart) {
+                            if (it == SwipeToDismissBoxValue.EndToStart && progress >= 0.5f) {
                                 coroutineScope.launch {
                                     isVisible = false
                                     delay(300)
@@ -248,55 +253,73 @@ fun TasksField(
                         }
                     )
 
+                    LaunchedEffect(dismissState.progress) {
+                        progress = dismissState.progress
+                    }
+
                     SwipeToDismissBox(
                         state = dismissState,
                         backgroundContent = {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.Red),
-                                contentAlignment = Alignment.CenterEnd
-                            ) {
-                                Row {
-                                    Text(text = "Удалить", color = Color.White)
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Удалить",
-                                        tint = Color.White
-                                    )
-                                }
-                            }
+                            DismissDeleteBox()
                         }
                     ) {
-                        Card(
-                            modifier = Modifier.padding(bottom = 8.dp),
-                            shape = RectangleShape,
-                            colors = CardDefaults.cardColors(containerColor = BattleshipGrey)
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(bottom = 12.dp)
-                            ) {
-                                Text(
-                                    text = task.title,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.W400,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(8.dp)
-                                )
-                                Text(
-                                    text = task.description,
-                                    fontSize = 12.sp,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                                )
-                            }
-                        }
+                        TaskCard(task)
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TaskCard(
+    task: Task,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(bottom = 8.dp),
+        shape = RectangleShape,
+        colors = CardDefaults.cardColors(containerColor = BattleshipGrey)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        ) {
+            Text(
+                text = task.title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.W400,
+                color = Color.White,
+                modifier = Modifier.padding(8.dp)
+            )
+            Text(
+                text = task.description,
+                fontSize = 12.sp,
+                color = Color.White,
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun DismissDeleteBox(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(bottom = 8.dp)
+            .background(Brick),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = "Удалить",
+            tint = Color.White,
+            modifier = Modifier.padding(end = 16.dp)
+        )
     }
 }
 
