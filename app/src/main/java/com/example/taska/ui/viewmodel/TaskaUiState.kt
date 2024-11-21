@@ -14,5 +14,7 @@ data class TaskaUiState(
             week = it.dayOfWeek
         )
     },
-    val currentTasks: List<Task> = emptyList()
+    val currentTasks: List<Task> = emptyList(),
+    val isCanRefreshTasks: Boolean = true,
+    val isDataLoaded: Boolean = false
 )

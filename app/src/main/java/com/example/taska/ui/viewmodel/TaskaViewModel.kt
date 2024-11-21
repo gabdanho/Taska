@@ -7,11 +7,14 @@ import com.example.taska.data.TaskDao
 import com.example.taska.model.date.Day
 import com.example.taska.model.date.generateCalendar
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,8 +23,14 @@ class TaskaViewModel @Inject constructor(private val taskDao: TaskDao) : ViewMod
     val uiState: StateFlow<TaskaUiState> = _uiState.asStateFlow()
 
     init {
-        getDays()
-        getTasks()
+        viewModelScope.launch {
+            getDays()
+            refreshTasks()
+            delay(1000)
+            _uiState.update { state ->
+                state.copy(isDataLoaded = true)
+            }
+        }
     }
 
     private fun getDays() {
@@ -30,29 +39,44 @@ class TaskaViewModel @Inject constructor(private val taskDao: TaskDao) : ViewMod
         }
     }
 
-    private fun getTasks(day: Day = uiState.value.currentDay) {
+    private fun refreshTasks(day: Day = uiState.value.currentDay) {
         viewModelScope.launch {
             taskDao.getTasksByDate(day).collect { tasks ->
                 _uiState.update { state ->
-                    state.copy(
-                        currentTasks = tasks
-                    )
+                    state.copy(currentTasks = tasks)
                 }
             }
         }
     }
 
     suspend fun createTask(task: Task) {
-        taskDao.addTask(task)
-        getTasks()
+        withContext(Dispatchers.IO) {
+            taskDao.addTask(task)
+            delay(50)
+            refreshTasks()
+        }
     }
 
     fun changeCurrentDay(day: Day) {
-        getTasks(day)
+        if (day != uiState.value.currentDay) {
+            _uiState.update { state ->
+                state.copy(
+                    currentDay = day
+                )
+            }
+            refreshTasks(day)
+        }
+    }
+
+    suspend fun removeTaskFromDatabase(task: Task) {
+        withContext(Dispatchers.IO) {
+            taskDao.deleteTask(task)
+        }
+    }
+
+    fun changeRefreshState(flag: Boolean) {
         _uiState.update { state ->
-            state.copy(
-                currentDay = day
-            )
+            state.copy(isCanRefreshTasks = flag)
         }
     }
 }

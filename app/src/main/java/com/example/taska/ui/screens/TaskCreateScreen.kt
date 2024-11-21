@@ -28,8 +28,6 @@ import com.example.taska.data.Task
 import com.example.taska.model.date.Day
 import com.example.taska.ui.custom.InputTextField
 import com.example.taska.ui.theme.AquaSqueeze
-import java.time.DayOfWeek
-import java.time.Month
 
 @Composable
 fun TaskCreateScreen(
@@ -104,16 +102,16 @@ fun TaskCreateScreen(
     }
 }
 
-@Preview
-@Composable
-private fun TaskCreateScreenPreview() {
-    TaskCreateScreen(
-        day = Day(
-            month = Month.NOVEMBER,
-            number = 14,
-            year = 2024,
-            week = DayOfWeek.FRIDAY
-        ),
-        onCreateTaskClick = { }
-    )
-}
+//@Preview
+//@Composable
+//private fun TaskCreateScreenPreview() {
+//    TaskCreateScreen(
+//        day = Day(
+//            month = Month.NOVEMBER,
+//            number = 14,
+//            year = 2024,
+//            week = DayOfWeek.FRIDAY
+//        ),
+//        onCreateTaskClick = { }
+//    )
+//}

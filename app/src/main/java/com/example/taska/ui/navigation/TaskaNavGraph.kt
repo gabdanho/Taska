@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import com.example.taska.ui.screens.MainScreen
 import com.example.taska.ui.screens.TaskCreateScreen
 import com.example.taska.ui.viewmodel.TaskaViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -23,34 +24,41 @@ fun TaskaNavGraph(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
 
-    NavHost(
-        navController = navController,
-        startDestination = ScreenRoutes.MAIN.name
-    ) {
-        composable(route = ScreenRoutes.MAIN.name) {
-            MainScreen(
-                tasks = uiState.currentTasks,
-                daysList = uiState.daysList,
-                currentDay = uiState.currentDay,
-                onCreateTaskButtonClick = { navController.navigate(ScreenRoutes.CREATE.name) },
-                changeCurrentDay = viewModel::changeCurrentDay
-            )
-        }
+    if (uiState.isDataLoaded) {
+        NavHost(
+            navController = navController,
+            startDestination = ScreenRoutes.MAIN.name
+        ) {
+            composable(route = ScreenRoutes.MAIN.name) {
+                MainScreen(
+                    isCanRefreshTasks = uiState.isCanRefreshTasks,
+                    tasks = uiState.currentTasks,
+                    daysList = uiState.daysList,
+                    currentDay = uiState.currentDay,
+                    onCreateTaskButtonClick = { navController.navigate(ScreenRoutes.CREATE.name) },
+                    changeCurrentDay = viewModel::changeCurrentDay,
+                    removeTaskSwipe = viewModel::removeTaskFromDatabase,
+                    changeRefreshState = viewModel::changeRefreshState
+                )
+            }
 
-        composable(route = ScreenRoutes.CREATE.name) {
-            TaskCreateScreen(
-                day = uiState.currentDay,
-                onCreateTaskClick = { task ->
-                    if (task.title == "" && task.description == "") {
-                        Toast.makeText(context, "Пустая заметка не была добавлена", Toast.LENGTH_SHORT).show()
-                    } else {
-                        coroutineScope.launch {
-                            viewModel.createTask(task)
+            composable(route = ScreenRoutes.CREATE.name) {
+                TaskCreateScreen(
+                    day = uiState.currentDay,
+                    onCreateTaskClick = { task ->
+                        if (task.title == "" && task.description == "") {
+                            Toast.makeText(context, "Пустая заметка не была добавлена", Toast.LENGTH_SHORT).show()
+                        } else {
+                            coroutineScope.launch {
+                                viewModel.createTask(task)
+                                viewModel.changeRefreshState(true)
+                                delay(50)
+                                navController.popBackStack()
+                            }
                         }
                     }
-                    navController.popBackStack()
-                }
-            )
+                )
+            }
         }
     }
 }

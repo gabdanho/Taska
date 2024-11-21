@@ -1,6 +1,7 @@
 package com.example.taska.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.taska.model.date.Day
@@ -13,4 +14,7 @@ interface TaskDao {
 
     @Insert
     suspend fun addTask(task: Task)
+
+    @Delete
+    suspend fun deleteTask(task: Task)
 }

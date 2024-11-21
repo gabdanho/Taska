@@ -1,7 +1,5 @@
 package com.example.taska.model.date
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import java.time.LocalDate
 
 fun isLeap(year: Int): Boolean {
