@@ -1,55 +1,103 @@
 package com.example.taska.ui.custom
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.taska.constants.TextFieldType
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun InputTextField(
     typeField: TextFieldType = TextFieldType.DEFAULT,
     value: String,
+    initialValue: String,
+    maxLines: Int = Int.MAX_VALUE,
     onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    enabled: Boolean = true,
+    autoFocus: Boolean = false,
+    onLeaveFocus: () -> Unit = { -> },
+    modifier: Modifier = Modifier,
 ) {
-    TextField(
+    val focusRequester = remember { FocusRequester() }
+    var isFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(autoFocus) {
+        if (autoFocus) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    BasicTextField(
+        enabled = enabled,
         value = value,
         onValueChange = onValueChange,
-        placeholder = {
-            Text(
-                text = typeField.text,
-                fontSize = typeField.fontSize.sp
-            )
+        decorationBox = { innerTextField ->
+            var isShowCursor by remember { mutableStateOf(false) }
+            val coroutineScope = rememberCoroutineScope()
+
+            LaunchedEffect(Unit) {
+                coroutineScope.launch {
+                    while(value.isEmpty()) {
+                        isShowCursor = !isShowCursor
+                        delay(500)
+                    }
+                    isShowCursor = false
+                }
+            }
+            if (value.isEmpty() && enabled) {
+                if (isShowCursor && isFocused) {
+                    Text(
+                        text = "|",
+                        fontSize = typeField.fontSize.sp
+                    )
+                }
+                Text(
+                    text = typeField.text,
+                    fontSize = typeField.fontSize.sp,
+                    color = typeField.textColor.copy(alpha = 0.4f)
+                )
+            } else innerTextField()
         },
         textStyle = TextStyle.Default.copy(
             fontSize = typeField.fontSize.sp,
-            fontWeight = if (typeField == TextFieldType.TITLE) FontWeight.W400 else FontWeight.Normal
+            color = typeField.textColor,
+            fontWeight = typeField.fontWeight
         ),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.Transparent,
-            focusedContainerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            cursorColor = Color.Black,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        modifier = modifier.fillMaxWidth()
+        maxLines = maxLines,
+        modifier = modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onFocusChanged { state ->
+                isFocused = state.isFocused
+                if (!state.isFocused && initialValue != value) {
+                    onLeaveFocus()
+                    println("${typeField.text} save data")
+                }
+            }
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun InputFieldPreview() {
-    InputTextField(
-        typeField = TextFieldType.TITLE,
-        value = "",
-        onValueChange = { }
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun InputFieldPreview() {
+//    InputTextField(
+//        typeField = TextFieldType.TITLE,
+//        value = "",
+//        onValueChange = { },
+//        initialValue = task.title
+//    )
+//}

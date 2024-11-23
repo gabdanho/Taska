@@ -38,6 +38,7 @@ fun TaskaNavGraph(
                     onCreateTaskButtonClick = { navController.navigate(ScreenRoutes.CREATE.name) },
                     changeCurrentDay = viewModel::changeCurrentDay,
                     removeTaskSwipe = viewModel::removeTaskFromDatabase,
+                    updateTask = viewModel::updateTask,
                     changeRefreshState = viewModel::changeRefreshState
                 )
             }
@@ -48,6 +49,8 @@ fun TaskaNavGraph(
                     onCreateTaskClick = { task ->
                         if (task.title == "" && task.description == "") {
                             Toast.makeText(context, "Пустая заметка не была добавлена", Toast.LENGTH_SHORT).show()
+                            viewModel.changeRefreshState(true)
+                            navController.popBackStack()
                         } else {
                             coroutineScope.launch {
                                 viewModel.createTask(task)

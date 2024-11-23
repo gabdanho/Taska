@@ -57,14 +57,24 @@ class TaskaViewModel @Inject constructor(private val taskDao: TaskDao) : ViewMod
         }
     }
 
+    suspend fun updateTask(task: Task) {
+        withContext(Dispatchers.IO) {
+            taskDao.updateTask(task)
+        }
+    }
+
     fun changeCurrentDay(day: Day) {
         if (day != uiState.value.currentDay) {
-            _uiState.update { state ->
-                state.copy(
-                    currentDay = day
-                )
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    _uiState.update { state ->
+                        state.copy(
+                            currentDay = day
+                        )
+                    }
+                    refreshTasks(day)
+                }
             }
-            refreshTasks(day)
         }
     }
 

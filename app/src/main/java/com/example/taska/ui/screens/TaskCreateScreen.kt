@@ -22,7 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.taska.constants.TextFieldType
 import com.example.taska.data.Task
 import com.example.taska.model.date.Day
@@ -91,12 +91,17 @@ fun TaskCreateScreen(
             InputTextField(
                 typeField = TextFieldType.TITLE,
                 value = titleValue,
-                onValueChange = { titleValue = it }
+                onValueChange = { titleValue = it },
+                autoFocus = true,
+                modifier = Modifier.padding(12.dp),
+                initialValue = task.title
             )
             InputTextField(
                 typeField = TextFieldType.DESCRIPTION,
                 value = descriptionValue,
-                onValueChange = { descriptionValue = it }
+                onValueChange = { descriptionValue = it },
+                modifier = Modifier.padding(12.dp),
+                initialValue = task.title
             )
         }
     }
