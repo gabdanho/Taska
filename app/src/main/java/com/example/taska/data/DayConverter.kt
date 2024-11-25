@@ -1,7 +1,5 @@
 package com.example.taska.data
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.room.TypeConverter
 import com.example.taska.model.date.Day
 import java.time.DayOfWeek

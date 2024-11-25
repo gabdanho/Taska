@@ -89,4 +89,6 @@ class TaskaViewModel @Inject constructor(private val taskDao: TaskDao) : ViewMod
             state.copy(isCanRefreshTasks = flag)
         }
     }
+
+    fun getLastTaskId(): Int = uiState.value.currentTasks.lastOrNull()?.id ?: 0
 }

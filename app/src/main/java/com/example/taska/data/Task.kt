@@ -12,5 +12,6 @@ data class Task(
     val id: Int = 0,
     val date: Day = Day(1, Month.JANUARY, 2024, DayOfWeek.MONDAY),
     val title: String = "",
-    val description: String = ""
+    val description: String = "",
+    val imagesId: List<String> = listOf()
 )

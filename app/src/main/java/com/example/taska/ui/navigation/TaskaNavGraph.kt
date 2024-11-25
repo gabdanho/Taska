@@ -21,8 +21,6 @@ fun TaskaNavGraph(
     navController: NavHostController
 ) {
     val uiState = viewModel.uiState.collectAsState().value
-    val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     if (uiState.isDataLoaded) {
         NavHost(
@@ -46,20 +44,10 @@ fun TaskaNavGraph(
             composable(route = ScreenRoutes.CREATE.name) {
                 TaskCreateScreen(
                     day = uiState.currentDay,
-                    onCreateTaskClick = { task ->
-                        if (task.title == "" && task.description == "") {
-                            Toast.makeText(context, "Пустая заметка не была добавлена", Toast.LENGTH_SHORT).show()
-                            viewModel.changeRefreshState(true)
-                            navController.popBackStack()
-                        } else {
-                            coroutineScope.launch {
-                                viewModel.createTask(task)
-                                viewModel.changeRefreshState(true)
-                                delay(50)
-                                navController.popBackStack()
-                            }
-                        }
-                    }
+                    getLastTaskId = viewModel::getLastTaskId,
+                    toBackScreen = { navController.popBackStack() },
+                    changeRefreshState = viewModel::changeRefreshState,
+                    createTask = viewModel::createTask
                 )
             }
         }

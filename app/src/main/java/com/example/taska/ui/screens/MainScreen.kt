@@ -1,11 +1,15 @@
 package com.example.taska.ui.screens
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +33,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -57,11 +62,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import com.example.taska.R
 import com.example.taska.constants.TextFieldType
 import com.example.taska.data.Task
 import com.example.taska.model.date.Day
@@ -70,10 +82,13 @@ import com.example.taska.ui.theme.AquaSpring
 import com.example.taska.ui.theme.BattleshipGrey
 import com.example.taska.ui.theme.Brick
 import com.example.taska.ui.theme.FruitSalad
+import com.example.taska.utils.ImageManager.deleteImageFromInternalStorage
+import com.example.taska.utils.ImageManager.saveImageToInternalStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 
 @Composable
 fun MainScreen(
@@ -307,11 +322,43 @@ fun TaskCard(
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var displayedTask by remember { mutableStateOf(task) }
     var isExpanded by remember { mutableStateOf(false) }
     var title by remember { mutableStateOf(displayedTask.title) }
     var description by remember { mutableStateOf(displayedTask.description) }
+    val imagesLinks = remember { mutableStateListOf(*task.imagesId.toTypedArray()) }.apply {
+        if (this.size == 1 && this[0] == "") removeAt(0)
+    }
+
+    var showImage by remember { mutableStateOf(false) }
+    var selectedImageLink by remember { mutableStateOf("") }
+
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                val imageId = if (imagesLinks.isNotEmpty()) imagesLinks.last().replace(".jpg", "").takeLastWhile { it != '-' }.toInt() + 1 else 1
+                val fileName = "${displayedTask.id}-${imageId}.jpg"
+                imagesLinks.add(fileName)
+                saveImageToInternalStorage(context, uri, fileName)
+                displayedTask = displayedTask.copy(imagesId = imagesLinks)
+                updateTask(displayedTask)
+            }
+        } else {
+            Toast.makeText(context, "Изображение не было выбрано", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    if (showImage) {
+        Dialog(onDismissRequest = { showImage = false }) {
+            Image(
+                painter = rememberAsyncImagePainter(File(context.filesDir, selectedImageLink)),
+                contentDescription = "image",
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
 
     Card(
         modifier = modifier
@@ -372,6 +419,49 @@ fun TaskCard(
                     },
                     modifier = Modifier.padding(12.dp)
                 )
+                if (imagesLinks.isNotEmpty()) {
+                    LazyRow(modifier = Modifier.padding(top = 8.dp)) {
+                        items(imagesLinks) { imageLink ->
+                            Box(modifier = Modifier.size(300.dp)) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(File(context.filesDir, imageLink)),
+                                    contentDescription = "image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(300.dp)
+                                        .padding(end = 4.dp)
+                                        .clickable {
+                                            showImage = true
+                                            selectedImageLink = imageLink
+                                        }
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Delete image",
+                                    modifier = Modifier
+                                        .size(30.dp)
+                                        .align(Alignment.TopEnd)
+                                        .clickable {
+                                            coroutineScope.launch {
+                                                imagesLinks.remove(imageLink)
+                                                deleteImageFromInternalStorage(context, imageLink)
+                                                displayedTask = displayedTask.copy(imagesId = imagesLinks)
+                                                updateTask(displayedTask)
+                                            }
+                                        }
+                                )
+                            }
+                        }
+                    }
+                }
+                IconButton(onClick = { galleryLauncher.launch("image/*") }, modifier = Modifier.size(50.dp)) {
+                    Icon(
+                        painter = painterResource(R.drawable.add_img),
+                        tint = Color.White,
+                        contentDescription = "Add image",
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
             } else if (description.isNotEmpty()) {
                 Text(
                     text = "...",
