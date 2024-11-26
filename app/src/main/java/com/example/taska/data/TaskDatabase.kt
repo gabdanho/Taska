@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
-@TypeConverters(DayConverter::class, ImageIdListConverter::class)
-@Database(entities = [Task::class], version = 5)
+@TypeConverters(DayConverter::class, ImageIdListConverter::class, RemindersConverter::class)
+@Database(entities = [Task::class], version = 6)
 abstract class TaskDatabase : RoomDatabase() {
     abstract fun taskDao() : TaskDao
     companion object {

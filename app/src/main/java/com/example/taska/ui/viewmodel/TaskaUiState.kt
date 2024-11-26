@@ -16,5 +16,8 @@ data class TaskaUiState(
     },
     val currentTasks: List<Task> = emptyList(),
     val isCanRefreshTasks: Boolean = true,
-    val isDataLoaded: Boolean = false
+    val isDataLoaded: Boolean = false,
+    val time: String = "",
+    val date: String = "",
+    val text: String = ""
 )

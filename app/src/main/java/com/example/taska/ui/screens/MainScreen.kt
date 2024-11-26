@@ -1,5 +1,10 @@
 package com.example.taska.ui.screens
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.content.Context
+import android.widget.DatePicker
+import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -71,12 +77,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.example.taska.R
 import com.example.taska.constants.TextFieldType
 import com.example.taska.data.Task
 import com.example.taska.model.date.Day
+import com.example.taska.notifications.Reminder
 import com.example.taska.ui.custom.InputTextField
 import com.example.taska.ui.theme.AquaSpring
 import com.example.taska.ui.theme.BattleshipGrey
@@ -89,6 +95,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Calendar
 
 @Composable
 fun MainScreen(
@@ -100,7 +107,11 @@ fun MainScreen(
     updateTask: suspend (Task) -> Unit,
     removeTaskSwipe: suspend (Task) -> Unit,
     onCreateTaskButtonClick: () -> Unit,
-    changeRefreshState: (Boolean) -> Unit
+    changeTime: (Int, Int) -> Unit,
+    changeDate: (Int, Int, Int) -> Unit,
+    changeRefreshState: (Boolean) -> Unit,
+    addReminder: (Context, Task) -> Reminder?,
+    changeReminderText: (String) -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -121,6 +132,10 @@ fun MainScreen(
             isCanRefreshTasks = isCanRefreshTasks,
             changeRefreshState = changeRefreshState,
             updateTask = updateTask,
+            changeDate = changeDate,
+            changeTime = changeTime,
+            addReminder = addReminder,
+            changeReminderText = changeReminderText,
             modifier = Modifier.padding(innerPadding)
         )
         Box(
@@ -248,8 +263,12 @@ fun TasksField(
     tasks: List<Task>,
     updateTask: suspend (Task) -> Unit,
     removeTaskSwipe: suspend (Task) -> Unit,
+    changeTime: (Int, Int) -> Unit,
+    changeDate: (Int, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
-    changeRefreshState: (Boolean) -> Unit
+    changeRefreshState: (Boolean) -> Unit,
+    addReminder: (Context, Task) -> Reminder?,
+    changeReminderText: (String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val displayedTasks = remember { mutableStateListOf<Task>() }
@@ -305,9 +324,10 @@ fun TasksField(
                         state = dismissState,
                         backgroundContent = {
                             DismissDeleteBox()
-                        }
+                        },
+                        enableDismissFromStartToEnd = false
                     ) {
-                        TaskCard(task, updateTask)
+                        TaskCard(task, updateTask, changeDate, changeTime, addReminder, changeReminderText)
                     }
                 }
             }
@@ -319,10 +339,15 @@ fun TasksField(
 fun TaskCard(
     task: Task,
     updateTask: suspend (Task) -> Unit,
+    changeDate: (Int, Int, Int) -> Unit,
+    changeTime: (Int, Int) -> Unit,
+    addReminder: (Context, Task) -> Reminder?,
+    changeReminderText: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    var showDateTimePicker by remember { mutableStateOf(false) }
 
     var displayedTask by remember { mutableStateOf(task) }
     var isExpanded by remember { mutableStateOf(false) }
@@ -331,6 +356,7 @@ fun TaskCard(
     val imagesLinks = remember { mutableStateListOf(*task.imagesId.toTypedArray()) }.apply {
         if (this.size == 1 && this[0] == "") removeAt(0)
     }
+    val reminders = remember { mutableStateListOf(*task.reminders.toTypedArray()) }
 
     var showImage by remember { mutableStateOf(false) }
     var selectedImageLink by remember { mutableStateOf("") }
@@ -347,6 +373,19 @@ fun TaskCard(
             }
         } else {
             Toast.makeText(context, "Изображение не было выбрано", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    if (showDateTimePicker) {
+        DateAndTimePicker(
+            task,
+            changeDate,
+            changeTime,
+            { showDateTimePicker = false },
+            addReminder,
+            changeReminderText
+        ) { reminder ->
+            reminders.add(reminder)
         }
     }
 
@@ -445,7 +484,8 @@ fun TaskCard(
                                             coroutineScope.launch {
                                                 imagesLinks.remove(imageLink)
                                                 deleteImageFromInternalStorage(context, imageLink)
-                                                displayedTask = displayedTask.copy(imagesId = imagesLinks)
+                                                displayedTask =
+                                                    displayedTask.copy(imagesId = imagesLinks)
                                                 updateTask(displayedTask)
                                             }
                                         }
@@ -454,13 +494,42 @@ fun TaskCard(
                         }
                     }
                 }
-                IconButton(onClick = { galleryLauncher.launch("image/*") }, modifier = Modifier.size(50.dp)) {
-                    Icon(
-                        painter = painterResource(R.drawable.add_img),
-                        tint = Color.White,
-                        contentDescription = "Add image",
-                        modifier = Modifier.size(40.dp)
-                    )
+                if (reminders.isNotEmpty()) {
+                    LazyRow(modifier = Modifier.padding(top = 8.dp)) {
+                        items(reminders) { reminder ->
+                            Card(
+                                colors = CardDefaults.cardColors(
+                                    containerColor = AquaSpring
+                                ),
+                                modifier = Modifier.padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "${reminder.date} ${reminder.time}",
+                                    modifier = Modifier.padding(6.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                Row {
+                    IconButton(onClick = { galleryLauncher.launch("image/*") }, modifier = Modifier.size(50.dp)) {
+                        Icon(
+                            painter = painterResource(R.drawable.add_img),
+                            tint = Color.White,
+                            contentDescription = "Add image",
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                    IconButton(onClick = { showDateTimePicker = true }, modifier = Modifier.size(50.dp)) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            tint = Color.White,
+                            contentDescription = "Add notification",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(start = 8.dp)
+                        )
+                    }
                 }
             } else if (description.isNotEmpty()) {
                 Text(
@@ -471,6 +540,85 @@ fun TaskCard(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun DateAndTimePicker(
+    task: Task,
+    changeDate: (Int, Int, Int) -> Unit,
+    changeTime: (Int, Int) -> Unit,
+    changeShowPicker: (Boolean) -> Unit,
+    addReminder: (Context, Task) -> Reminder?,
+    changeReminderText: (String) -> Unit,
+    updateLocalTaskReminders: (Reminder) -> Unit
+) {
+    var showDatePicker by remember { mutableStateOf(true) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+    val datePickerDialog = DatePickerDialog(
+        context,
+        {
+            _: DatePicker,
+            selectedYear: Int,
+            selectedMonth: Int,
+            selectedDay: Int ->
+                showDatePicker = false
+                showTimePicker = true
+                changeDate(selectedYear, selectedMonth, selectedDay)
+        },
+        year, month, day
+    ).apply {
+        setOnCancelListener {
+            showDatePicker = false
+            changeShowPicker(false)
+        }
+        setOnDismissListener {
+            changeShowPicker(false)
+        }
+    }
+
+    val hour = calendar.get(Calendar.HOUR_OF_DAY)
+    val minute = calendar.get(Calendar.MINUTE)
+    val timePickerDialog = TimePickerDialog(
+        context,
+        {
+            _: TimePicker,
+            selectedHour: Int,
+            selectedMinute: Int ->
+                changeTime(selectedHour, selectedMinute)
+                changeReminderText(task.title)
+                val reminder = addReminder(context, task)
+                updateLocalTaskReminders(reminder!!)
+                showTimePicker = false
+                changeShowPicker(false)
+        },
+        hour, minute, true
+    ).apply {
+        setOnCancelListener {
+            showDatePicker = false
+            showTimePicker = false
+            changeShowPicker(false)
+        }
+        setOnDismissListener {
+            showDatePicker = false
+            showTimePicker = false
+            changeShowPicker(false)
+        }
+    }
+
+    if (showDatePicker) {
+        datePickerDialog.show()
+    }
+
+    if (showTimePicker) {
+        timePickerDialog.show()
     }
 }
 

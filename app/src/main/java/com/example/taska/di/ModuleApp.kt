@@ -1,5 +1,6 @@
 package com.example.taska.di
 
+import android.app.AlarmManager
 import android.content.Context
 import com.example.taska.data.TaskDao
 import com.example.taska.data.TaskDatabase
@@ -26,5 +27,11 @@ object ModuleApp {
     @Singleton
     fun provideTaskDao(db: TaskDatabase): TaskDao {
         return db.taskDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAlarmManager(@ApplicationContext appContext: Context): AlarmManager {
+        return appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     }
 }

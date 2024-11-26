@@ -67,6 +67,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     // Coil
     implementation(libs.coil.compose)
+    // Для работы с датой и временем
+    implementation(libs.threetenabp)
+    implementation(libs.threetenabp.v144)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
