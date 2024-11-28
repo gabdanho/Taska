@@ -40,6 +40,7 @@ fun TaskaNavGraph(
                     changeRefreshState = viewModel::changeRefreshState,
                     addReminder = viewModel::addReminderForTaska,
                     changeReminderText = viewModel::changeReminderText,
+                    removeReminder = viewModel::removeReminder,
                     onBackPressed = { context?.finish() }
                 )
             }

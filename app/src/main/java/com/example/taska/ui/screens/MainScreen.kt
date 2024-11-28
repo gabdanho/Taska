@@ -20,6 +20,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,6 +72,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -115,6 +117,7 @@ fun MainScreen(
     changeDate: (Int, Int, Int) -> Unit,
     changeRefreshState: (Boolean) -> Unit,
     addReminder: (Context, Task) -> Reminder?,
+    removeReminder: (Task, Reminder, Context) -> Unit,
     changeReminderText: (String) -> Unit
 ) {
     val backCallback = remember {
@@ -151,6 +154,7 @@ fun MainScreen(
             changeTime = changeTime,
             addReminder = addReminder,
             changeReminderText = changeReminderText,
+            removeReminder = removeReminder,
             modifier = Modifier.padding(innerPadding)
         )
         Box(
@@ -283,6 +287,7 @@ fun TasksField(
     modifier: Modifier = Modifier,
     changeRefreshState: (Boolean) -> Unit,
     addReminder: (Context, Task) -> Reminder?,
+    removeReminder: (Task, Reminder, Context) -> Unit,
     changeReminderText: (String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -342,7 +347,7 @@ fun TasksField(
                         },
                         enableDismissFromStartToEnd = false
                     ) {
-                        TaskCard(task, updateTask, changeDate, changeTime, addReminder, changeReminderText)
+                        TaskCard(task, updateTask, changeDate, changeTime, addReminder, removeReminder, changeReminderText)
                     }
                 }
             }
@@ -357,12 +362,14 @@ fun TaskCard(
     changeDate: (Int, Int, Int) -> Unit,
     changeTime: (Int, Int) -> Unit,
     addReminder: (Context, Task) -> Reminder?,
+    removeReminder: (Task, Reminder, Context) -> Unit,
     changeReminderText: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     var showDateTimePicker by remember { mutableStateOf(false) }
+    var showDeleteReminderDialog by remember { mutableStateOf(false) }
 
     var displayedTask by remember { mutableStateOf(task) }
     var isExpanded by remember { mutableStateOf(false) }
@@ -372,6 +379,7 @@ fun TaskCard(
         if (this.size == 1 && this[0] == "") removeAt(0)
     }
     val reminders = remember { mutableStateListOf(*task.reminders.toTypedArray()) }
+    var selectedReminder by remember { mutableStateOf<Reminder?>(null) }
 
     var showImage by remember { mutableStateOf(false) }
     var selectedImageLink by remember { mutableStateOf("") }
@@ -391,6 +399,41 @@ fun TaskCard(
         }
     }
 
+    // Dialog about delete reminder
+    if (showDeleteReminderDialog) {
+        Dialog(onDismissRequest = { showDeleteReminderDialog = false }) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = AquaSpring
+                )
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "Удалить уведомление на ${selectedReminder?.date} ${selectedReminder?.time}?",
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    Button(
+                        onClick = {
+                            removeReminder(displayedTask, selectedReminder!!, context)
+                            reminders.remove(selectedReminder)
+                            showDeleteReminderDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BattleshipGrey
+                        ),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        Text("Удалить")
+                    }
+                }
+            }
+        }
+    }
+
+    // Date And Time picker
     if (showDateTimePicker) {
         DateAndTimePicker(
             task,
@@ -404,6 +447,7 @@ fun TaskCard(
         }
     }
 
+    // Image full screen
     if (showImage) {
         Dialog(onDismissRequest = { showImage = false }) {
             Image(
@@ -516,7 +560,16 @@ fun TaskCard(
                                 colors = CardDefaults.cardColors(
                                     containerColor = AquaSpring
                                 ),
-                                modifier = Modifier.padding(8.dp)
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onLongPress = {
+                                                selectedReminder = reminder
+                                                showDeleteReminderDialog = true
+                                            }
+                                        )
+                                    }
                             ) {
                                 Text(
                                     text = "${reminder.date} ${reminder.time}",
