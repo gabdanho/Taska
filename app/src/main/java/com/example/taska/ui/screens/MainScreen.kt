@@ -95,6 +95,7 @@ import com.example.taska.ui.theme.Brick
 import com.example.taska.ui.theme.FruitSalad
 import com.example.taska.utils.ImageManager.deleteImageFromInternalStorage
 import com.example.taska.utils.ImageManager.saveImageToInternalStorage
+import com.example.taska.utils.translateToRus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -207,7 +208,7 @@ fun TopAppBarScreen(
         modifier = modifier.background(color = AquaSpring)
     ) {
         Text(
-            text = daysList[scrollState.firstVisibleItemIndex].month.toString(),
+            text = daysList[scrollState.firstVisibleItemIndex].month.translateToRus(),
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.W600,
             fontSize = 22.sp,
@@ -245,9 +246,7 @@ fun TopAppBarScreen(
                     contentPadding = PaddingValues(0.dp),
                     modifier = Modifier
                         .padding(
-                            if (day != daysList.last()) PaddingValues(end = 12.dp) else PaddingValues(
-                                0.dp
-                            )
+                            if (day != daysList.last()) PaddingValues(end = 12.dp) else PaddingValues(0.dp)
                         )
                         .size(60.dp)
                 ) {
@@ -263,7 +262,7 @@ fun TopAppBarScreen(
                             fontSize = 18.sp
                         )
                         Text(
-                            text = day.week.toString().take(2),
+                            text = day.week.translateToRus(),
                             fontWeight = FontWeight.Bold,
                             color = Color.Black,
                             fontSize = 10.sp
