@@ -6,6 +6,9 @@ import android.content.Context
 import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -99,6 +102,7 @@ import java.util.Calendar
 
 @Composable
 fun MainScreen(
+    onBackPressed: () -> Unit = { },
     daysList: List<Day>,
     currentDay: Day,
     tasks: List<Task>,
@@ -113,6 +117,17 @@ fun MainScreen(
     addReminder: (Context, Task) -> Reminder?,
     changeReminderText: (String) -> Unit
 ) {
+    val backCallback = remember {
+        object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                onBackPressed()
+            }
+        }
+    }
+
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    backDispatcher?.addCallback(backCallback)
+
     Scaffold(
         topBar = {
             TopAppBarScreen(

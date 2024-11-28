@@ -175,7 +175,7 @@ class TaskaViewModel @Inject constructor(
         _uiState.update { it.copy(text = text) }
     }
 
-    fun changeTime(year: Int, month: Int, day: Int) {
+    fun changeDate(year: Int, month: Int, day: Int) {
         _uiState.update { it.copy(date = "${addZero(day)}.${addZero(month + 1)}.$year") }
     }
 

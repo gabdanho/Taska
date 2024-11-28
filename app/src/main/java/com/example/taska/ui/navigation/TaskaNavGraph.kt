@@ -1,7 +1,9 @@
 package com.example.taska.ui.navigation
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -16,6 +18,7 @@ fun TaskaNavGraph(
     navController: NavHostController
 ) {
     val uiState = viewModel.uiState.collectAsState().value
+    val context = LocalContext.current as? Activity
 
     if (uiState.isDataLoaded) {
         NavHost(
@@ -32,11 +35,12 @@ fun TaskaNavGraph(
                     changeCurrentDay = viewModel::changeCurrentDay,
                     removeTaskSwipe = viewModel::removeTaskFromDatabase,
                     updateTask = viewModel::updateTask,
-                    changeDate = viewModel::changeTime,
+                    changeDate = viewModel::changeDate,
                     changeTime = viewModel::changeTime,
                     changeRefreshState = viewModel::changeRefreshState,
                     addReminder = viewModel::addReminderForTaska,
-                    changeReminderText = viewModel::changeReminderText
+                    changeReminderText = viewModel::changeReminderText,
+                    onBackPressed = { context?.finish() }
                 )
             }
 

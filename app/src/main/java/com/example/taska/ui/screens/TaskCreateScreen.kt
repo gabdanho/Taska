@@ -128,9 +128,11 @@ fun TaskCreateScreen(
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 toBackButtonClick()
+                this.remove()
             }
         }
     }
+
     val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
     backDispatcher?.addCallback(backCallback)
 
@@ -149,6 +151,7 @@ fun TaskCreateScreen(
                 IconButton(
                     onClick = {
                         toBackButtonClick()
+                        backCallback.remove()
                     }
                 ) {
                     Icon(
@@ -217,6 +220,7 @@ fun TaskCreateScreen(
                                 .align(Alignment.TopEnd)
                                 .clickable {
                                     tempImagesUri.remove(uri)
+                                    backCallback.remove()
                                 }
                         )
                     }
