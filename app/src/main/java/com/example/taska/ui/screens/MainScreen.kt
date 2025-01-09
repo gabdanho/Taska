@@ -7,7 +7,6 @@ import android.widget.DatePicker
 import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -105,6 +104,7 @@ import java.util.Calendar
 
 @Composable
 fun MainScreen(
+    modifier: Modifier = Modifier,
     onBackPressed: () -> Unit = { },
     daysList: List<Day>,
     currentDay: Day,
@@ -143,7 +143,8 @@ fun MainScreen(
                     top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
                 )
             )
-        }
+        },
+        modifier = modifier
     ) { innerPadding ->
         TasksField(
             tasks = tasks,
@@ -189,11 +190,11 @@ fun MainScreen(
 
 @Composable
 fun TopAppBarScreen(
+    modifier: Modifier = Modifier,
     currentDay: Day,
     daysList: List<Day>,
     changeRefreshState: (Boolean) -> Unit,
-    changeCurrentDay: (Day) -> Unit,
-    modifier: Modifier = Modifier
+    changeCurrentDay: (Day) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberLazyListState()
@@ -277,13 +278,13 @@ fun TopAppBarScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TasksField(
+    modifier: Modifier = Modifier,
     isCanRefreshTasks: Boolean,
     tasks: List<Task>,
     updateTask: suspend (Task) -> Unit,
     removeTaskSwipe: suspend (Task) -> Unit,
     changeTime: (Int, Int) -> Unit,
     changeDate: (Int, Int, Int) -> Unit,
-    modifier: Modifier = Modifier,
     changeRefreshState: (Boolean) -> Unit,
     addReminder: (Context, Task) -> Reminder?,
     removeReminder: (Task, Reminder, Context) -> Unit,
@@ -346,7 +347,15 @@ fun TasksField(
                         },
                         enableDismissFromStartToEnd = false
                     ) {
-                        TaskCard(task, updateTask, changeDate, changeTime, addReminder, removeReminder, changeReminderText)
+                        TaskCard(
+                            task = task,
+                            updateTask = updateTask,
+                            changeDate = changeDate,
+                            changeTime = changeTime,
+                            addReminder = addReminder,
+                            removeReminder = removeReminder,
+                            changeReminderText = changeReminderText
+                        )
                     }
                 }
             }
@@ -356,14 +365,14 @@ fun TasksField(
 
 @Composable
 fun TaskCard(
+    modifier: Modifier = Modifier,
     task: Task,
     updateTask: suspend (Task) -> Unit,
     changeDate: (Int, Int, Int) -> Unit,
     changeTime: (Int, Int) -> Unit,
     addReminder: (Context, Task) -> Reminder?,
     removeReminder: (Task, Reminder, Context) -> Unit,
-    changeReminderText: (String) -> Unit,
-    modifier: Modifier = Modifier
+    changeReminderText: (String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current

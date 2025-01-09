@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun InputTextField(
+    modifier: Modifier = Modifier,
     typeField: TextFieldType = TextFieldType.DEFAULT,
     value: String,
     initialValue: String,
@@ -30,7 +31,6 @@ fun InputTextField(
     enabled: Boolean = true,
     autoFocus: Boolean = false,
     onLeaveFocus: () -> Unit = { -> },
-    modifier: Modifier = Modifier,
 ) {
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }

@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -61,12 +60,12 @@ import java.io.File
 
 @Composable
 fun TaskCreateScreen(
+    modifier: Modifier = Modifier,
     day: Day,
     getLastTaskId: () -> Int,
     toBackScreen: () -> Unit,
     changeRefreshState: (Boolean) -> Unit,
-    createTask: suspend (Task) -> Unit,
-    modifier: Modifier = Modifier
+    createTask: suspend (Task) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
