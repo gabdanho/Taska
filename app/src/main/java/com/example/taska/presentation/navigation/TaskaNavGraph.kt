@@ -3,15 +3,14 @@ package com.example.taska.presentation.navigation
 import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.taska.presentation.screens.MainScreen
-import com.example.taska.presentation.screens.TaskCreateScreen
-import com.example.taska.presentation.viewmodel.TaskaViewModel
+import com.example.taska.presentation.screens.tasks.TasksScreen
+import com.example.taska.presentation.screens.task_create.TaskCreateScreen
+import com.example.taska.presentation.screens.TaskaViewModel
 
 @Composable
 fun TaskaNavGraph(
@@ -27,7 +26,7 @@ fun TaskaNavGraph(
             startDestination = ScreenRoutes.MAIN.name
         ) {
             composable(route = ScreenRoutes.MAIN.name) {
-                MainScreen(
+                TasksScreen(
                     isCanRefreshTasks = uiState.isCanRefreshTasks,
                     tasks = uiState.currentTasks,
                     daysList = uiState.daysList,

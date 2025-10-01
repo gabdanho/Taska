@@ -9,7 +9,7 @@ fun TaskDomain.toDataLayer(): Task {
         date = date.toDataLayer(),
         title= title,
         description = description,
-        imagesId = imagesId,
+        images = images,
         reminders = reminders.map { it.toDataLayer() }
     )
 }
@@ -20,7 +20,7 @@ fun Task.toDomainLayer(): TaskDomain {
         date = date.toDomainLayer(),
         title= title,
         description = description,
-        imagesId = imagesId,
+        images = images,
         reminders = reminders.map { it.toDomainLayer() }
     )
 }

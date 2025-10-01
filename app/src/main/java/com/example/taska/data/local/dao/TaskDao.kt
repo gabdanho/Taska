@@ -7,11 +7,12 @@ import androidx.room.Query
 import androidx.room.Update
 import com.example.taska.data.local.entity.Task
 import com.example.taska.data.local.model.Date
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
     @Query("SELECT * FROM tasks WHERE date = :selectedDate")
-    fun getTasksByDate(selectedDate: Date): List<Task>
+    fun getTasksByDate(selectedDate: Date): Flow<List<Task>>
 
     @Insert
     suspend fun addTask(task: Task)

@@ -1,7 +1,7 @@
-package com.example.taska.presentation.viewmodel
+package com.example.taska.presentation.screens
 
-import com.example.taska.data.local.entity.Task
 import com.example.taska.presentation.model.task.Date
+import com.example.taska.presentation.model.task.Task
 import java.time.LocalDate
 
 data class TaskaUiState(

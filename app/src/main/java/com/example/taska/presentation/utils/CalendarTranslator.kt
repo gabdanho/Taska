@@ -3,7 +3,7 @@ package com.example.taska.presentation.utils
 import java.time.DayOfWeek
 import java.time.Month
 
-fun Month.translateToRus(): String {
+fun Month.convertToText(): String {
     return when(this) {
         Month.JANUARY -> "ЯНВАРЬ"
         Month.FEBRUARY -> "ФЕВРАЛЬ"
@@ -20,7 +20,7 @@ fun Month.translateToRus(): String {
     }
 }
 
-fun DayOfWeek.translateToRus(): String {
+fun DayOfWeek.convertToText(): String {
     return when(this) {
         DayOfWeek.MONDAY -> "ПН"
         DayOfWeek.TUESDAY -> "ВТ"

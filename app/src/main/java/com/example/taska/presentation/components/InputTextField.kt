@@ -1,6 +1,5 @@
-package com.example.taska.presentation.custom
+package com.example.taska.presentation.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,10 +21,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun InputTextField(
-    modifier: Modifier = Modifier,
-    typeField: TextFieldType = TextFieldType.DEFAULT,
     value: String,
     initialValue: String,
+    modifier: Modifier = Modifier,
+    cursorDelayAnimation: Long = 500L,
+    typeField: TextFieldType = TextFieldType.DEFAULT,
     maxLines: Int = Int.MAX_VALUE,
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,
@@ -53,7 +53,7 @@ fun InputTextField(
                 coroutineScope.launch {
                     while(value.isEmpty()) {
                         isShowCursor = !isShowCursor
-                        delay(500)
+                        delay(cursorDelayAnimation)
                     }
                     isShowCursor = false
                 }
@@ -79,25 +79,13 @@ fun InputTextField(
         ),
         maxLines = maxLines,
         modifier = modifier
-            .fillMaxWidth()
             .focusRequester(focusRequester)
             .onFocusChanged { state ->
-                isFocused = state.isFocused
+                val nowFocused = state.isFocused
                 if (!state.isFocused && initialValue != value) {
                     onLeaveFocus()
-                    println("${typeField.text} save data")
                 }
+                isFocused = nowFocused
             }
     )
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//private fun InputFieldPreview() {
-//    InputTextField(
-//        typeField = TextFieldType.TITLE,
-//        value = "",
-//        onValueChange = { },
-//        initialValue = task.title
-//    )
-//}

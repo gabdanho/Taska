@@ -6,14 +6,18 @@ import com.example.taska.data.mappers.toDomainLayer
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
 import com.example.taska.domain.model.Date
 import com.example.taska.domain.model.Task
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class TasksRepositoryImpl(
     private val taskDao: TaskDao,
 ) : TasksRepository {
 
-    override suspend fun getTasksByDate(date: Date): List<Task> {
-        val mappedData = date.toDataLayer()
-        return taskDao.getTasksByDate(selectedDate = mappedData).map { it.toDomainLayer() }
+    override fun getTasksByDate(date: Date): Flow<List<Task>> {
+        val mappedDate = date.toDataLayer()
+        return taskDao.getTasksByDate(selectedDate = mappedDate).map { list ->
+            list.map { it.toDomainLayer() }
+        }
     }
 
     override suspend fun addTask(task: Task) {

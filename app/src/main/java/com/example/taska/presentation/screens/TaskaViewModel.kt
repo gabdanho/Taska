@@ -1,4 +1,4 @@
-package com.example.taska.presentation.viewmodel
+package com.example.taska.presentation.screens
 
 import android.app.AlarmManager
 import android.content.Context

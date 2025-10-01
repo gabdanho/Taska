@@ -2,10 +2,11 @@ package com.example.taska.domain.interfaces.repository.local
 
 import com.example.taska.domain.model.Date
 import com.example.taska.domain.model.Task
+import kotlinx.coroutines.flow.Flow
 
 interface TasksRepository {
 
-    suspend fun getTasksByDate(date: Date): List<Task>
+    fun getTasksByDate(date: Date): Flow<List<Task>>
 
     suspend fun addTask(task: Task)
 
