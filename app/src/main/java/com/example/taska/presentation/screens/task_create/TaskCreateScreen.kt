@@ -1,6 +1,5 @@
 package com.example.taska.presentation.screens.task_create
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -28,6 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,6 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.taska.R
 import com.example.taska.presentation.constants.TextFieldType
@@ -47,26 +50,28 @@ import com.example.taska.presentation.theme.FruitSalad
 @Composable
 fun TaskCreateScreen(
     modifier: Modifier = Modifier,
+    viewModel: TaskCreateScreenViewModel = hiltViewModel<TaskCreateScreenViewModel>(),
 ) {
     val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
 
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
-                addImage(uri)
+                viewModel.addImage(uri.toString())
             } else {
                 Toast.makeText(context, "Изображение не было выбрано", Toast.LENGTH_SHORT).show()
             }
         }
 
     BackHandler {
-        onBackClick()
+        viewModel.onBackButtonClick()
     }
 
     Scaffold(
         topBar = {
             TopCreateTaskBar(
-                onBackClick = onBackClick,
+                onBackClick = { viewModel.onBackButtonClick() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(AquaSqueeze)
@@ -85,13 +90,13 @@ fun TaskCreateScreen(
                 .background(AquaSqueeze)
         ) {
             RedactorTask(
-                title = newTask.title,
-                description = newTask.description,
-                images = newTask.images,
-                onImageClick = { onImageClick(it) },
-                deleteImage = { deleteImage(it) },
-                onTitleChange = { onTitleChange(it) },
-                onDescriptionChange = { onDescriptionChange(it) }
+                title = uiState.newTask.title,
+                description = uiState.newTask.description,
+                images = uiState.newTask.images,
+                onImageClick = { viewModel.onImageClick(it) },
+                deleteImage = { viewModel.deleteImage(it) },
+                onTitleChange = { viewModel.onTitleChange(it) },
+                onDescriptionChange = { viewModel.onDescriptionChange(it) }
             )
         }
         Box(
@@ -105,10 +110,10 @@ fun TaskCreateScreen(
         }
     }
 
-    if (image != null) {
-        Dialog(onDismissRequest = { removeImageToShow() }) {
+    if (uiState.imageToShow != null) {
+        Dialog(onDismissRequest = { viewModel.removeImageToShow() }) {
             AsyncImage(
-                model = image,
+                model = uiState.imageToShow,
                 contentDescription = "Selected image",
                 modifier = Modifier.fillMaxWidth()
             )
@@ -137,16 +142,16 @@ private fun TopCreateTaskBar(
 // +++
 @Composable
 private fun ImageItem(
-    uri: Uri,
-    onImageClick: (Uri) -> Unit,
-    deleteImage: (Uri) -> Unit,
+    uri: String,
+    onImageClick: (String) -> Unit,
+    deleteImage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
     ) {
         AsyncImage(
-            model = uri,
+            model = uri.toUri(),
             contentDescription = "Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -194,9 +199,9 @@ private fun AddImageFloatingActionButton(
 fun RedactorTask(
     title: String,
     description: String,
-    images: List<Uri>,
-    onImageClick: (Uri) -> Unit,
-    deleteImage: (Uri) -> Unit,
+    images: List<String>,
+    onImageClick: (String) -> Unit,
+    deleteImage: (String) -> Unit,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
 ) {

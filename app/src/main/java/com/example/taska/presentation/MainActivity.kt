@@ -11,30 +11,40 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationManagerCompat
 import com.example.taska.presentation.theme.TaskaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-            isGranted: Boolean -> if(!isGranted) {
-        Toast.makeText(this, "Нет разрешения на получение уведомлений", Toast.LENGTH_LONG).show()
-    }
-    }
+    private val requestPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (!isGranted) {
+                Toast.makeText(this, "Нет разрешения на получение уведомлений", Toast.LENGTH_LONG)
+                    .show()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-            && !NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && !NotificationManagerCompat.from(this).areNotificationsEnabled()
+        ) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-            && !alarmManager.canScheduleExactAlarms()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            && !alarmManager.canScheduleExactAlarms()
+        ) {
             val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
             startActivity(intent)
         }
@@ -42,7 +52,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TaskaTheme {
-                TaskaApp()
+                Surface(modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())) {
+                    TaskaApp()
+                }
             }
         }
     }

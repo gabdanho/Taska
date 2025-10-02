@@ -2,8 +2,6 @@ package com.example.taska.presentation.screens.tasks
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.net.Uri
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -51,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -72,6 +71,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.example.taska.R
 import com.example.taska.presentation.constants.TextFieldType
@@ -93,67 +93,80 @@ import java.time.LocalTime
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
+    viewModel: TasksScreenViewModel = hiltViewModel<TasksScreenViewModel>(),
 ) {
-    BackHandler {
-        onBackPressed()
-    }
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBarScreen(
-                currentDay = currentDay,
-                daysList = daysList,
-                changeCurrentDay = changeCurrentDay,
+                currentDay = uiState.currentDay,
+                daysList = uiState.daysList,
+                changeCurrentDay = { viewModel.changeCurrentDay(it) },
             )
         },
         modifier = modifier
     ) { innerPadding ->
         TasksField(
-            displayedTasks = displayedTasks,
-            deleteTask = removeTaskSwipe,
-            onTitleChange = onTitleChange,
-            updateTitle = updateTitle,
-            onDescriptionChange = onDescriptionChange,
-            updateDescription = updateDescription,
-            onImageClick = onImageClick,
-            deleteImage = deleteImage,
-            showDeleteReminderDialog = showDeleteReminderDialog,
-            addImage = addImage,
-            openDatePicker = openDatePicker,
+            displayedTasks = uiState.displayedTasks,
+            deleteTask = { viewModel.deleteTask(it) },
+            onTitleChange = { task, title -> viewModel.onTitleChange(task, title) },
+            onDescriptionChange = { task, description ->
+                viewModel.onDescriptionChange(task, description)
+            },
+            onImageClick = { viewModel.changeImageToShow(it) },
+            deleteImage = { task, image -> viewModel.deleteImage(task, image) },
+            showDeleteReminderDialog = { task, reminder ->
+                viewModel.changeIsShowDeleteReminderDialog(
+                    isShow = true,
+                    reminder = reminder,
+                    task = task
+                )
+            },
+            addImage = { task, image -> viewModel.addImage(task, image) },
+            openDatePicker = { viewModel.changeIsShowDateTimePicker(true) },
             modifier = Modifier.padding(innerPadding)
         )
         AddFloatingActionButton(
-            onCreateTaskButtonClick = onCreateTaskButtonClick,
+            onCreateTaskButtonClick = { viewModel.onCreateTaskClick() },
             modifier = Modifier.padding(8.dp)
         )
     }
 
     // Dialog about delete reminder
-    if (isShowDeleteReminderDialog) {
-        DeleteReminderDialog(
-            selectedReminder = selectedReminder,
-            deleteReminder = { deleteReminder(it) },
-            onDismiss = onDismissReminder
-        )
+    if (uiState.isShowDeleteReminderDialog) {
+        uiState.selectedReminder?.let {
+            DeleteReminderDialog(
+                selectedReminder = it,
+                deleteReminder = { viewModel.deleteReminder() },
+                onDismiss = {
+                    viewModel.changeIsShowDeleteReminderDialog(
+                        isShow = false,
+                        reminder = null,
+                        task = null
+                    )
+                }
+            )
+        }
     }
 
     // Date And Time picker
-    if (isShowDateTimeDialog) {
+    if (uiState.isShowDateTimePicker) {
         DateAndTimePicker(
-            isShowDatePicker = isShowDatePicker,
-            isShowTimePicker = isShowTimePicker,
-            onDismissDate = onDismissDate,
-            onDismissTime = onDismissTime,
-            onDatePicked = { onDatePicked(it) },
-            onTimePicked = { onTimePicked(it) }
+            isShowDatePicker = uiState.isShowDatePicker,
+            isShowTimePicker = uiState.isShowTimePicker,
+            onDismissDate = { viewModel.changeIsShowDatePicker(false) },
+            onDismissTime = { viewModel.changeIsShowTimePicker(false) },
+            onDatePicked = { date -> viewModel.onDatePicked(date = date) },
+            onTimePicked = { time -> viewModel.onTimePicked(time = time) },
         )
     }
 
     // Image full screen
-    if (image != null) {
+    uiState.imageToShow?.let { image ->
         ImageDialog(
             image = image,
-            onDismiss = onDismissImageDialog,
+            onDismiss = { viewModel.changeImageToShow(null) },
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -217,14 +230,12 @@ private fun TopAppBarScreen(
 private fun TasksField(
     displayedTasks: List<Task>,
     deleteTask: (Task) -> Unit,
-    onTitleChange: (String) -> Unit,
-    updateTitle: () -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    updateDescription: () -> Unit,
+    onTitleChange: (Task, String) -> Unit,
+    onDescriptionChange: (Task, String) -> Unit,
     onImageClick: (String) -> Unit,
-    deleteImage: (String) -> Unit,
-    showDeleteReminderDialog: (Reminder) -> Unit,
-    addImage: (Uri) -> Unit,
+    deleteImage: (Task, String) -> Unit,
+    showDeleteReminderDialog: (Task, Reminder) -> Unit,
+    addImage: (Task, String) -> Unit,
     openDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -238,14 +249,22 @@ private fun TasksField(
                 displayedTask = task,
                 index = i,
                 deleteTask = deleteTask,
-                onTitleChange = { onTitleChange(it) },
-                updateTitle = updateTitle,
-                onDescriptionChange = { onDescriptionChange(it) },
-                updateDescription = updateDescription,
+                onTitleChange = { task, title -> onTitleChange(task, title) },
+                onDescriptionChange = { task, description ->
+                    onDescriptionChange(
+                        task,
+                        description
+                    )
+                },
                 onImageClick = { onImageClick(it) },
-                deleteImage = { deleteImage(it) },
-                showDeleteReminderDialog = { showDeleteReminderDialog(it) },
-                addImage = { addImage(it) },
+                deleteImage = { task, image -> deleteImage(task, image) },
+                showDeleteReminderDialog = { task, reminder ->
+                    showDeleteReminderDialog(
+                        task,
+                        reminder
+                    )
+                },
+                addImage = { task, image -> addImage(task, image) },
                 openDatePicker = openDatePicker
             )
         }
@@ -365,14 +384,12 @@ private fun TaskListItem(
     displayedTask: Task,
     index: Int,
     deleteTask: (Task) -> Unit,
-    onTitleChange: (String) -> Unit,
-    updateTitle: () -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    updateDescription: () -> Unit,
+    onTitleChange: (Task, String) -> Unit,
+    onDescriptionChange: (Task, String) -> Unit,
     onImageClick: (String) -> Unit,
-    deleteImage: (String) -> Unit,
-    showDeleteReminderDialog: (Reminder) -> Unit,
-    addImage: (Uri) -> Unit,
+    deleteImage: (Task, String) -> Unit,
+    showDeleteReminderDialog: (Task, Reminder) -> Unit,
+    addImage: (Task, String) -> Unit,
     openDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -412,14 +429,22 @@ private fun TaskListItem(
             ) {
                 TaskCard(
                     displayedTask = displayedTask,
-                    onTitleChange = { onTitleChange(it) },
-                    updateTitle = updateTitle,
-                    onDescriptionChange = { onDescriptionChange(it) },
-                    updateDescription = updateDescription,
+                    onTitleChange = { task, title -> onTitleChange(task, title) },
+                    onDescriptionChange = { task, description ->
+                        onDescriptionChange(
+                            task,
+                            description
+                        )
+                    },
                     onImageClick = { onImageClick(it) },
-                    deleteImage = { deleteImage(it) },
-                    showDeleteReminderDialog = { showDeleteReminderDialog(it) },
-                    addImage = { addImage(it) },
+                    deleteImage = { task, image -> deleteImage(task, image) },
+                    showDeleteReminderDialog = { reminder ->
+                        showDeleteReminderDialog(
+                            displayedTask,
+                            reminder
+                        )
+                    },
+                    addImage = { task, image -> addImage(task, image) },
                     openDatePicker = openDatePicker
                 )
             }
@@ -431,7 +456,7 @@ private fun TaskListItem(
 @Composable
 private fun DeleteReminderDialog(
     selectedReminder: Reminder,
-    deleteReminder: (Reminder) -> Unit,
+    deleteReminder: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -451,10 +476,7 @@ private fun DeleteReminderDialog(
                     modifier = Modifier.padding(8.dp)
                 )
                 Button(
-                    onClick = {
-                        deleteReminder(selectedReminder)
-                        onDismiss()
-                    },
+                    onClick = { deleteReminder() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BattleshipGrey
                     ),
@@ -487,14 +509,12 @@ private fun ImageDialog(
 @Composable
 private fun TaskCard(
     displayedTask: Task,
-    onTitleChange: (String) -> Unit,
-    updateTitle: () -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    updateDescription: () -> Unit,
+    onTitleChange: (Task, String) -> Unit,
+    onDescriptionChange: (Task, String) -> Unit,
     onImageClick: (String) -> Unit,
-    deleteImage: (String) -> Unit,
+    deleteImage: (Task, String) -> Unit,
     showDeleteReminderDialog: (Reminder) -> Unit,
-    addImage: (Uri) -> Unit,
+    addImage: (Task, String) -> Unit,
     openDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -518,18 +538,21 @@ private fun TaskCard(
                 isExpanded = isExpanded,
                 title = displayedTask.title,
                 hide = { isExpanded = false },
-                onTitleChange = { onTitleChange(it) },
-                updateTitle = updateTitle,
+                onTitleChange = { title -> onTitleChange(displayedTask, title) },
             )
             TaskMoreInfo(
                 displayedTask = displayedTask,
                 isExpanded = isExpanded,
-                onDescriptionChange = { onDescriptionChange(it) },
-                updateDescription = updateDescription,
+                onDescriptionChange = { description ->
+                    onDescriptionChange(
+                        displayedTask,
+                        description
+                    )
+                },
                 onImageClick = { onImageClick(it) },
-                deleteImage = { deleteImage(it) },
+                deleteImage = { image -> deleteImage(displayedTask, image) },
                 showDeleteReminderDialog = { showDeleteReminderDialog(it) },
-                addImage = { addImage(it) },
+                addImage = { image -> addImage(displayedTask, image) },
                 openDatePicker = openDatePicker
             )
         }
@@ -542,7 +565,6 @@ private fun TaskTitle(
     title: String,
     onTitleChange: (String) -> Unit,
     isExpanded: Boolean,
-    updateTitle: () -> Unit,
     hide: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -566,7 +588,6 @@ private fun TaskTitle(
             value = title,
             onValueChange = { onTitleChange(it) },
             enabled = isExpanded,
-            onLeaveFocus = { updateTitle() },
             modifier = Modifier
                 .padding(12.dp)
                 .fillMaxWidth()
@@ -580,11 +601,10 @@ private fun TaskMoreInfo(
     displayedTask: Task,
     isExpanded: Boolean,
     onDescriptionChange: (String) -> Unit,
-    updateDescription: () -> Unit,
     onImageClick: (String) -> Unit,
     deleteImage: (String) -> Unit,
     showDeleteReminderDialog: (Reminder) -> Unit,
-    addImage: (Uri) -> Unit,
+    addImage: (String) -> Unit,
     openDatePicker: () -> Unit,
 ) {
     val initialDescription = displayedTask.description
@@ -596,7 +616,6 @@ private fun TaskMoreInfo(
             value = displayedTask.description,
             onValueChange = { onDescriptionChange(it) },
             maxLines = Int.MAX_VALUE,
-            onLeaveFocus = { updateDescription() },
             modifier = Modifier
                 .padding(12.dp)
                 .fillMaxWidth()
@@ -612,7 +631,7 @@ private fun TaskMoreInfo(
         if (displayedTask.reminders.isNotEmpty()) {
             TaskReminders(
                 reminders = displayedTask.reminders,
-                showDeleteReminderDialog = { showDeleteReminderDialog(it) },
+                showDeleteReminderDialog = { reminder -> showDeleteReminderDialog(reminder) },
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
@@ -633,14 +652,14 @@ private fun TaskMoreInfo(
 // +++
 @Composable
 private fun ActionButtons(
-    addImage: (Uri) -> Unit,
+    addImage: (String) -> Unit,
     openDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
-                addImage(uri)
+                addImage(uri.toString())
             }
         }
 
@@ -726,9 +745,7 @@ private fun TaskReminders(
                     .padding(8.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onLongPress = {
-                                showDeleteReminderDialog(reminder)
-                            }
+                            onLongPress = { showDeleteReminderDialog(reminder) }
                         )
                     }
             ) {

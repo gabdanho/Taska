@@ -7,7 +7,8 @@ fun isLeap(year: Int): Boolean {
     return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 }
 
-fun generateCalendar(currentYear: Int = LocalDate.now().year): List<Date> {
+fun generateCalendar(): List<Date> {
+    val currentYear = LocalDate.now().year
     val totalDays = if (isLeap(currentYear)) 366 else 365
     val daysList = mutableListOf<Date>()
 
