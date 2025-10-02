@@ -3,10 +3,13 @@ package com.example.taska.presentation.screens.tasks
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
+import com.example.taska.presentation.mappers.toPresentationLayer
 import com.example.taska.presentation.mappers.toDomainLayer
 import com.example.taska.presentation.model.task.Date
 import com.example.taska.presentation.model.task.Reminder
 import com.example.taska.presentation.model.task.Task
+import com.example.taska.presentation.navigation.Navigator
+import com.example.taska.presentation.navigation.model.AppGraph
 import com.example.taska.presentation.utils.generateCalendar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TasksScreenViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TasksScreenUiState())
@@ -28,10 +32,14 @@ class TasksScreenViewModel @Inject constructor(
 
     init {
         getDays()
+        getTasks()
     }
 
     fun changeCurrentDay(date: Date) {
-        _uiState.update { state -> state.copy(currentDay = date) }
+        viewModelScope.launch {
+            _uiState.update { state -> state.copy(currentDay = date) }
+            getTasks()
+        }
     }
 
     fun deleteTask(task: Task) {
@@ -85,7 +93,9 @@ class TasksScreenViewModel @Inject constructor(
     }
 
     fun onCreateTaskClick() {
-        // TODO : Навигация
+        viewModelScope.launch {
+            navigator.navigate(destination = AppGraph.TaskCreateScreen(date = _uiState.value.currentDay))
+        }
     }
 
     fun changeIsShowDeleteReminderDialog(isShow: Boolean, reminder: Reminder?, task: Task?) {
@@ -129,5 +139,18 @@ class TasksScreenViewModel @Inject constructor(
 
     private fun getDays() {
         _uiState.update { state -> state.copy(daysList = generateCalendar()) }
+    }
+
+    fun getTasks() {
+        viewModelScope.launch {
+            tasksRepository
+                .getTasksByDate(date = _uiState.value.currentDay.toDomainLayer())
+                .collect { tasks ->
+                    _uiState.update { state ->
+                        val mappedTasks = tasks.map { it.toPresentationLayer() }
+                        state.copy(displayedTasks = mappedTasks)
+                    }
+                }
+        }
     }
 }

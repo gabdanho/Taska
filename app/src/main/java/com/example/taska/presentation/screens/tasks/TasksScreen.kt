@@ -180,9 +180,7 @@ private fun TopAppBarScreen(
     changeCurrentDay: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scrollState = rememberLazyListState(
-        initialFirstVisibleItemScrollOffset = daysList.indexOf(currentDay)
-    )
+    val scrollState = rememberLazyListState()
     val currentMonth by remember {
         derivedStateOf {
             daysList.getOrNull(scrollState.firstVisibleItemIndex)
@@ -190,6 +188,10 @@ private fun TopAppBarScreen(
                 ?.convertToText()
                 .orEmpty()
         }
+    }
+
+    LaunchedEffect(Unit) {
+        scrollState.scrollToItem(daysList.indexOf(currentDay))
     }
 
     Column(
@@ -216,7 +218,7 @@ private fun TopAppBarScreen(
             items(daysList) { day ->
                 DayButton(
                     day = day,
-                    currentDay = currentDay,
+                    isDaySelected = currentDay == day,
                     changeCurrentDay = changeCurrentDay,
                     modifier = Modifier.size(60.dp)
                 )
@@ -334,14 +336,14 @@ private fun DismissDeleteBox(modifier: Modifier = Modifier) {
 @Composable
 private fun DayButton(
     day: Date,
-    currentDay: Date,
+    isDaySelected: Boolean,
     changeCurrentDay: (Date) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
 
     val borderRadius by animateDpAsState(
-        targetValue = if (currentDay == day) 20.dp else 0.dp,
+        targetValue = if (isDaySelected) 20.dp else 0.dp,
         animationSpec = tween(300)
     )
 

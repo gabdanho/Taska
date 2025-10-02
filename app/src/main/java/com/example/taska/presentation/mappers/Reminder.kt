@@ -3,7 +3,7 @@ package com.example.taska.presentation.mappers
 import com.example.taska.presentation.model.task.Reminder
 import com.example.taska.domain.model.Reminder as ReminderDomain
 
-fun ReminderDomain.toDataLayer(): Reminder {
+fun ReminderDomain.toPresentationLayer(): Reminder {
     return Reminder(
         id = id,
         text = text,

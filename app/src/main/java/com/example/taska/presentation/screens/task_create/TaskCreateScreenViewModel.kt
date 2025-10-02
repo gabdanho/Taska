@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
 import com.example.taska.presentation.mappers.toDomainLayer
+import com.example.taska.presentation.model.task.Date
+import com.example.taska.presentation.navigation.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskCreateScreenViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TaskCreateScreenUiState())
@@ -28,7 +31,10 @@ class TaskCreateScreenViewModel @Inject constructor(
     }
 
     fun onBackButtonClick() {
-        createTask()
+        viewModelScope.launch {
+            createTask()
+            navigator.navigatePopBackStack()
+        }
     }
 
     fun deleteImage(uriString: String) {
@@ -56,11 +62,16 @@ class TaskCreateScreenViewModel @Inject constructor(
         _uiState.update { state -> state.copy(imageToShow = null) }
     }
 
+    fun getDate(date: Date) {
+        _uiState.update { state -> state.copy(currentDate = date) }
+    }
+
     private fun createTask() {
         viewModelScope.launch {
-            tasksRepository.addTask(
-                task = _uiState.value.newTask.toDomainLayer()
-            )
+            _uiState.value.currentDate?.let { date ->
+                val formattedTask = _uiState.value.newTask.copy(date = date)
+                tasksRepository.addTask(task = formattedTask.toDomainLayer())
+            }
         }
     }
 }

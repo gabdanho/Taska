@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationManagerCompat
+import com.example.taska.presentation.screens.main.MainScreen
 import com.example.taska.presentation.theme.TaskaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -33,7 +34,18 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkPermissions()
+        enableEdgeToEdge()
+        setContent {
+            TaskaTheme {
+                Surface(modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())) {
+                    MainScreen()
+                }
+            }
+        }
+    }
 
+    private fun checkPermissions() {
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
@@ -47,15 +59,6 @@ class MainActivity : ComponentActivity() {
         ) {
             val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
             startActivity(intent)
-        }
-
-        enableEdgeToEdge()
-        setContent {
-            TaskaTheme {
-                Surface(modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())) {
-                    TaskaApp()
-                }
-            }
         }
     }
 }

@@ -6,6 +6,9 @@ import com.example.taska.data.local.dao.TaskDao
 import com.example.taska.data.local.datasource.TaskDatabase
 import com.example.taska.data.repository.impl.TasksRepositoryImpl
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
+import com.example.taska.presentation.navigation.Navigator
+import com.example.taska.presentation.navigation.NavigatorImpl
+import com.example.taska.presentation.navigation.model.AppGraph
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,4 +45,8 @@ object ModuleApp {
     fun provideTasksRepository(taskDao: TaskDao): TasksRepository {
         return TasksRepositoryImpl(taskDao = taskDao)
     }
+
+    @Provides
+    @Singleton
+    fun provideNavigator(): Navigator = NavigatorImpl(startDestination = AppGraph.AllTasksScreen)
 }

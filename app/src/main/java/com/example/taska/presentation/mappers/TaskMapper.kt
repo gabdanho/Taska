@@ -3,14 +3,14 @@ package com.example.taska.presentation.mappers
 import com.example.taska.presentation.model.task.Task
 import com.example.taska.domain.model.Task as TaskDomain
 
-fun TaskDomain.toDataLayer(): Task {
+fun TaskDomain.toPresentationLayer(): Task {
     return Task(
         id = id,
-        date = date.toDataLayer(),
+        date = date.toPresentationLayer(),
         title= title,
         description = description,
         images = images,
-        reminders = reminders.map { it.toDataLayer() }
+        reminders = reminders.map { it.toPresentationLayer() }
     )
 }
 
