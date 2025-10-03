@@ -78,6 +78,7 @@ import com.example.taska.presentation.components.InputTextField
 import com.example.taska.presentation.model.task.Reminder
 import com.example.taska.presentation.model.task.Task
 import com.example.taska.presentation.theme.AquaSpring
+import com.example.taska.presentation.theme.AquaSqueeze
 import com.example.taska.presentation.theme.BattleshipGrey
 import com.example.taska.presentation.theme.Brick
 import com.example.taska.presentation.theme.FruitSalad
@@ -101,6 +102,7 @@ fun TasksScreen(
                 currentDay = uiState.currentDay,
                 daysList = uiState.daysList,
                 changeCurrentDay = { viewModel.changeCurrentDay(it) },
+                modifier = Modifier.background(color = AquaSpring)
             )
         },
         modifier = modifier
@@ -123,7 +125,11 @@ fun TasksScreen(
             },
             addImage = { task, image -> viewModel.addImage(task, image) },
             openDatePicker = { viewModel.changeIsShowDateTimePicker(true) },
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .background(AquaSqueeze)
+                .fillMaxSize()
+                .padding(12.dp)
+                .padding(innerPadding)
         )
         AddFloatingActionButton(
             onCreateTaskButtonClick = { viewModel.onCreateTaskClick() },
@@ -193,12 +199,13 @@ private fun TopAppBarScreen(
 
     Column(
         verticalArrangement = Arrangement.Center,
-        modifier = modifier.background(color = AquaSpring)
+        modifier = modifier
     ) {
         Text(
             text = currentMonth,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.W600,
+            color = Color.Black,
             fontSize = 22.sp,
             modifier = Modifier
                 .fillMaxWidth()
@@ -239,8 +246,6 @@ private fun TasksField(
 ) {
     LazyColumn(
         modifier = modifier
-            .padding(12.dp)
-            .fillMaxSize()
     ) {
         itemsIndexed(displayedTasks, key = { _, task -> task.id }) { i, task ->
             TaskListItem(
@@ -313,7 +318,6 @@ private fun DismissDeleteBox(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(bottom = 8.dp)
             .background(Brick),
         contentAlignment = Alignment.CenterEnd
     ) {
@@ -417,7 +421,9 @@ private fun TaskListItem(
 
             SwipeToDismissBox(
                 state = dismissState,
-                backgroundContent = { DismissDeleteBox() },
+                backgroundContent = {
+                    DismissDeleteBox(modifier = Modifier.padding(bottom = 8.dp))
+                },
                 enableDismissFromStartToEnd = false
             ) {
                 TaskCard(
@@ -438,7 +444,10 @@ private fun TaskListItem(
                         )
                     },
                     addImage = { task, image -> addImage(task, image) },
-                    openDatePicker = openDatePicker
+                    openDatePicker = openDatePicker,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 8.dp)
                 )
             }
         }
@@ -496,10 +505,7 @@ private fun TaskCard(
     var isExpanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(bottom = 8.dp)
-            .clickable { isExpanded = !isExpanded },
+        modifier = modifier.clickable { isExpanded = !isExpanded },
         shape = RectangleShape,
         colors = CardDefaults.cardColors(containerColor = BattleshipGrey)
     ) {
@@ -537,12 +543,12 @@ private fun TaskCard(
 @Composable
 private fun TaskTitle(
     title: String,
-    onTitleChange: (String) -> Unit,
     isExpanded: Boolean,
+    onTitleChange: (String) -> Unit,
     hide: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val initialValue = title
+    var localTitle by remember { mutableStateOf(title) }
 
     Row(modifier = modifier) {
         if (isExpanded) {
@@ -558,10 +564,10 @@ private fun TaskTitle(
         }
         InputTextField(
             typeField = TextFieldType.TITLE_CARD,
-            initialValue = initialValue,
-            value = title,
-            onValueChange = { onTitleChange(it) },
+            value = localTitle,
+            onValueChange = { localTitle = it },
             enabled = isExpanded,
+            onLeaveFocus = { onTitleChange(localTitle) },
             modifier = Modifier
                 .padding(12.dp)
                 .fillMaxWidth()
@@ -579,39 +585,42 @@ private fun TaskMoreInfo(
     showDeleteReminderDialog: (Reminder) -> Unit,
     addImage: (String) -> Unit,
     openDatePicker: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val initialDescription = displayedTask.description
+    var localDescription by remember { mutableStateOf(displayedTask.description) }
 
     if (isExpanded) {
-        InputTextField(
-            typeField = TextFieldType.DESCRIPTION_CARD,
-            initialValue = initialDescription,
-            value = displayedTask.description,
-            onValueChange = { onDescriptionChange(it) },
-            maxLines = Int.MAX_VALUE,
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth()
-        )
-        if (displayedTask.images.isNotEmpty()) {
-            TaskImages(
-                images = displayedTask.images,
-                deleteImage = deleteImage,
-                onImageClick = onImageClick,
-                modifier = Modifier.padding(top = 8.dp)
+        Column(modifier = modifier) {
+            InputTextField(
+                typeField = TextFieldType.DESCRIPTION_CARD,
+                value = localDescription,
+                onValueChange = { localDescription = it },
+                maxLines = Int.MAX_VALUE,
+                onLeaveFocus = { onDescriptionChange(localDescription) },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth()
+            )
+            if (displayedTask.images.isNotEmpty()) {
+                TaskImages(
+                    images = displayedTask.images,
+                    deleteImage = deleteImage,
+                    onImageClick = onImageClick,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            if (displayedTask.reminders.isNotEmpty()) {
+                TaskReminders(
+                    reminders = displayedTask.reminders,
+                    showDeleteReminderDialog = { reminder -> showDeleteReminderDialog(reminder) },
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+            ActionButtons(
+                addImage = { addImage(it) },
+                openDatePicker = openDatePicker
             )
         }
-        if (displayedTask.reminders.isNotEmpty()) {
-            TaskReminders(
-                reminders = displayedTask.reminders,
-                showDeleteReminderDialog = { reminder -> showDeleteReminderDialog(reminder) },
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-        ActionButtons(
-            addImage = { addImage(it) },
-            openDatePicker = openDatePicker
-        )
     } else if (displayedTask.description.isNotEmpty()) {
         Text(
             text = "...",

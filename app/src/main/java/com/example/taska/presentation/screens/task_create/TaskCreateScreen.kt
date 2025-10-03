@@ -165,39 +165,37 @@ fun RedactorTask(
     deleteImage: (String) -> Unit,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    val initialTitle = title
-    val initialDescription = description
-
-    InputTextField(
-        typeField = TextFieldType.TITLE,
-        value = title,
-        onValueChange = { onTitleChange(it) },
-        autoFocus = true,
-        modifier = Modifier
-            .padding(12.dp)
-            .fillMaxWidth(),
-        initialValue = initialTitle
-    )
-    InputTextField(
-        typeField = TextFieldType.DESCRIPTION,
-        value = description,
-        onValueChange = { onDescriptionChange(it) },
-        modifier = Modifier
-            .padding(12.dp)
-            .fillMaxWidth(),
-        initialValue = initialDescription
-    )
-    LazyRow(
-        modifier = Modifier.padding(top = 12.dp)
-    ) {
-        items(images) { uri ->
-            UriImageItem(
-                uri = uri,
-                onImageClick = { onImageClick(uri) },
-                deleteImage = { deleteImage(uri) },
-                modifier = Modifier.size(300.dp)
-            )
+    Column(modifier = modifier) {
+        InputTextField(
+            typeField = TextFieldType.TITLE,
+            value = title,
+            onValueChange = { onTitleChange(it) },
+            autoFocus = true,
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        )
+        InputTextField(
+            typeField = TextFieldType.DESCRIPTION,
+            value = description,
+            onValueChange = { onDescriptionChange(it) },
+            modifier = Modifier
+                .padding(12.dp)
+                .fillMaxWidth()
+        )
+        LazyRow(
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            items(images) { uri ->
+                UriImageItem(
+                    uri = uri,
+                    onImageClick = { onImageClick(uri) },
+                    deleteImage = { deleteImage(uri) },
+                    modifier = Modifier.size(300.dp)
+                )
+            }
         }
     }
 }

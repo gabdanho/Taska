@@ -43,7 +43,9 @@ class TasksScreenViewModel @Inject constructor(
         .flatMapLatest { day ->
             tasksRepository.getTasksByDate(day.toDomainLayer())
         }
-        .map { list -> list.map { it.toPresentationLayer() } }
+        .map { list ->
+            list.map { task -> task.toPresentationLayer() }
+        }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {

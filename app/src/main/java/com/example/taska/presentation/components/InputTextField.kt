@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun InputTextField(
     value: String,
-    initialValue: String,
     modifier: Modifier = Modifier,
     cursorDelayAnimation: Long = 500L,
     typeField: TextFieldType = TextFieldType.DEFAULT,
@@ -82,9 +81,7 @@ fun InputTextField(
             .focusRequester(focusRequester)
             .onFocusChanged { state ->
                 val nowFocused = state.isFocused
-                if (!state.isFocused && initialValue != value) {
-                    onLeaveFocus()
-                }
+                if (!state.isFocused) onLeaveFocus()
                 isFocused = nowFocused
             }
     )
