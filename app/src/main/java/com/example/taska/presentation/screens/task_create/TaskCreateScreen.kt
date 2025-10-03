@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
@@ -54,6 +56,7 @@ fun TaskCreateScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
 
     val galleryLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -87,6 +90,7 @@ fun TaskCreateScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
                 .background(AquaSqueeze)
+                .verticalScroll(scrollState)
         ) {
             RedactorTask(
                 title = uiState.newTask.title,

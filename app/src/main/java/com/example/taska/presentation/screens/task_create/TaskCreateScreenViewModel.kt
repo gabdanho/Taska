@@ -67,11 +67,42 @@ class TaskCreateScreenViewModel @Inject constructor(
     }
 
     private fun createTask() {
-        viewModelScope.launch {
-            _uiState.value.currentDate?.let { date ->
-                val formattedTask = _uiState.value.newTask.copy(date = date)
-                tasksRepository.addTask(task = formattedTask.toDomainLayer())
+        if (isCanCreateTask()) {
+            viewModelScope.launch {
+                _uiState.value.currentDate?.let { date ->
+                    val formattedTask = _uiState.value.newTask.copy(date = date)
+                    tasksRepository.addTask(task = formattedTask.toDomainLayer())
+                }
             }
         }
+    }
+
+    private fun isCanCreateTask(): Boolean {
+        val state = _uiState.value
+        return when {
+            state.newTask.title.isBlank() && state.newTask.description.isBlank() -> false
+
+            state.newTask.title.isNotBlank() -> true
+
+            _uiState.value.newTask.description.isNotBlank() -> {
+                createTitleFromDescription()
+                true
+            }
+
+            else -> false
+        }
+    }
+
+    private fun createTitleFromDescription() {
+        val newTitle =
+            _uiState.value.newTask.description
+                .split(" ")
+                .take(DESCRIPTION_WORDS)
+                .joinToString(" ")
+        _uiState.update { state -> state.copy(newTask = state.newTask.copy(title = newTitle)) }
+    }
+
+    companion object {
+        private const val DESCRIPTION_WORDS = 5
     }
 }
