@@ -5,6 +5,6 @@ data class Task(
     val date: Date = Date(),
     val title: String = "",
     val description: String = "",
-    val images: List<String> = listOf(),
-    val reminders: List<Reminder> = listOf(),
+    val images: List<String> = emptyList(),
+    val reminders: List<Reminder> = emptyList(),
 )
