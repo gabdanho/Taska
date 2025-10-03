@@ -30,7 +30,7 @@ fun InputTextField(
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,
     autoFocus: Boolean = false,
-    onLeaveFocus: () -> Unit = { -> },
+    onLeaveFocus: () -> Unit = { },
 ) {
     val focusRequester = remember { FocusRequester() }
     var isFocused by remember { mutableStateOf(false) }
@@ -51,7 +51,7 @@ fun InputTextField(
 
             LaunchedEffect(Unit) {
                 coroutineScope.launch {
-                    while(value.isEmpty()) {
+                    while (value.isEmpty()) {
                         isShowCursor = !isShowCursor
                         delay(cursorDelayAnimation)
                     }
