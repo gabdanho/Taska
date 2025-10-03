@@ -95,6 +95,7 @@ fun TasksScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val displayedTasks by viewModel.displayedTasks.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -109,7 +110,7 @@ fun TasksScreen(
     ) { innerPadding ->
         TasksField(
             displayedTasks = displayedTasks,
-            deleteTask = { viewModel.deleteTask(it) },
+            deleteTask = { task -> viewModel.deleteTask(context, task) },
             onTitleChange = { task, title -> viewModel.onTitleChange(task, title) },
             onDescriptionChange = { task, description ->
                 viewModel.onDescriptionChange(task, description)
@@ -124,7 +125,12 @@ fun TasksScreen(
                 )
             },
             addImage = { task, image -> viewModel.addImage(task, image) },
-            openDatePicker = { viewModel.changeIsShowDateTimePicker(true) },
+            openDatePicker = { task ->
+                viewModel.openDateAndTimePicker(
+                    selectedTask = task,
+                    isShow = true
+                )
+            },
             modifier = Modifier
                 .background(AquaSqueeze)
                 .fillMaxSize()
@@ -142,7 +148,13 @@ fun TasksScreen(
         uiState.selectedReminder?.let {
             DeleteReminderDialog(
                 selectedReminder = it,
-                deleteReminder = { viewModel.deleteReminder() },
+                deleteReminder = {
+                    viewModel.deleteReminder(
+                        context,
+                        uiState.selectedTask,
+                        uiState.selectedReminder
+                    )
+                },
                 onDismiss = {
                     viewModel.changeIsShowDeleteReminderDialog(
                         isShow = false,
@@ -154,15 +166,18 @@ fun TasksScreen(
         }
     }
 
-    // Date And Time picker
-    if (uiState.isShowDateTimePicker) {
-        DateAndTimePicker(
-            isShowDatePicker = uiState.isShowDatePicker,
-            isShowTimePicker = uiState.isShowTimePicker,
+    // Date and Time pickers
+    if (uiState.isShowDatePicker) {
+        DatePicker(
             onDismissDate = { viewModel.changeIsShowDatePicker(false) },
-            onDismissTime = { viewModel.changeIsShowTimePicker(false) },
             onDatePicked = { date -> viewModel.onDatePicked(date = date) },
-            onTimePicked = { time -> viewModel.onTimePicked(time = time) },
+        )
+    }
+
+    if (uiState.isShowTimePicker) {
+        TimePicker(
+            onDismissTime = { viewModel.changeIsShowTimePicker(false) },
+            onTimePicked = { time -> viewModel.onTimePicked(context = context, time = time) },
         )
     }
 
@@ -241,7 +256,7 @@ private fun TasksField(
     deleteImage: (Task, String) -> Unit,
     showDeleteReminderDialog: (Task, Reminder) -> Unit,
     addImage: (Task, String) -> Unit,
-    openDatePicker: () -> Unit,
+    openDatePicker: (Task) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -275,42 +290,44 @@ private fun TasksField(
 }
 
 @Composable
-private fun DateAndTimePicker(
-    isShowDatePicker: Boolean,
-    isShowTimePicker: Boolean,
-    onDismissDate: () -> Unit,
+private fun TimePicker(
     onDismissTime: () -> Unit,
-    onDatePicked: (LocalDate) -> Unit,
     onTimePicked: (LocalTime) -> Unit,
 ) {
     val context = LocalContext.current
     val now = LocalDateTime.now()
 
-    if (isShowDatePicker) {
-        DatePickerDialog(
-            context,
-            { _, year, month, day ->
-                onDatePicked(LocalDate.of(year, month + 1, day))
-            },
-            now.year, now.monthValue - 1, now.dayOfMonth
-        ).apply {
-            setOnCancelListener { onDismissDate() }
-            setOnDismissListener { onDismissDate() }
-        }.show()
-    }
+    TimePickerDialog(
+        context,
+        { _, hour, minute ->
+            onTimePicked(LocalTime.of(hour, minute))
+        },
+        now.hour, now.minute, true
+    ).apply {
+        setOnCancelListener { onDismissTime() }
+        setOnDismissListener { onDismissTime() }
+    }.show()
+}
 
-    if (isShowTimePicker) {
-        TimePickerDialog(
-            context,
-            { _, hour, minute ->
-                onTimePicked(LocalTime.of(hour, minute))
-            },
-            now.hour, now.minute, true
-        ).apply {
-            setOnCancelListener { onDismissTime() }
-            setOnDismissListener { onDismissTime() }
-        }.show()
-    }
+@Composable
+private fun DatePicker(
+    onDismissDate: () -> Unit,
+    onDatePicked: (LocalDate) -> Unit,
+) {
+    val context = LocalContext.current
+    val now = LocalDateTime.now()
+
+    DatePickerDialog(
+        context,
+        { _, year, month, day ->
+            onDatePicked(LocalDate.of(year, month + 1, day))
+        },
+        now.year, now.monthValue - 1, now.dayOfMonth
+    ).apply {
+        setOnCancelListener { onDismissDate() }
+        setOnDismissListener { onDismissDate() }
+    }.show()
+
 }
 
 @Composable
@@ -388,7 +405,7 @@ private fun TaskListItem(
     deleteImage: (Task, String) -> Unit,
     showDeleteReminderDialog: (Task, Reminder) -> Unit,
     addImage: (Task, String) -> Unit,
-    openDatePicker: () -> Unit,
+    openDatePicker: (Task) -> Unit,
     modifier: Modifier = Modifier,
     delayToShowItem: Long = 75L,
     durationMillis: Int = 300,
@@ -444,7 +461,7 @@ private fun TaskListItem(
                         )
                     },
                     addImage = { task, image -> addImage(task, image) },
-                    openDatePicker = openDatePicker,
+                    openDatePicker = { openDatePicker(displayedTask) },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(bottom = 8.dp)
@@ -474,6 +491,7 @@ private fun DeleteReminderDialog(
             ) {
                 Text(
                     text = "Удалить уведомление на ${selectedReminder.date} ${selectedReminder.time}?",
+                    color = Color.Black,
                     modifier = Modifier.padding(8.dp)
                 )
                 Button(
@@ -483,7 +501,7 @@ private fun DeleteReminderDialog(
                     ),
                     modifier = Modifier.padding(bottom = 8.dp)
                 ) {
-                    Text("Удалить")
+                    Text(text = "Удалить", color = Color.White)
                 }
             }
         }
@@ -715,6 +733,7 @@ private fun TaskReminders(
             ) {
                 Text(
                     text = "${reminder.date} ${reminder.time}",
+                    color = Color.Black,
                     modifier = Modifier.padding(6.dp)
                 )
             }

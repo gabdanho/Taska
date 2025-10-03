@@ -18,7 +18,6 @@ data class TasksScreenUiState(
     val isShowDeleteReminderDialog: Boolean = false,
     val isShowDatePicker: Boolean = false,
     val isShowTimePicker: Boolean = false,
-    val isShowDateTimePicker: Boolean = false,
     val selectedReminder: Reminder? = null,
     val selectedTask: Task? = null,
     val daysList: List<Date> = emptyList(),
