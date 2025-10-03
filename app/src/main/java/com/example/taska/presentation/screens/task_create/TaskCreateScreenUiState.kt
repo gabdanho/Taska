@@ -7,4 +7,5 @@ data class TaskCreateScreenUiState(
     val newTask: Task = Task(),
     val imageToShow: String? = null,
     val currentDate: Date? = null,
+    val imagesUris: List<String> = emptyList(),
 )

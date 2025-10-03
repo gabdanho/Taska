@@ -4,7 +4,9 @@ import android.app.AlarmManager
 import android.content.Context
 import com.example.taska.data.local.dao.TaskDao
 import com.example.taska.data.local.datasource.TaskDatabase
+import com.example.taska.data.repository.impl.ImagesRepositoryImpl
 import com.example.taska.data.repository.impl.TasksRepositoryImpl
+import com.example.taska.domain.interfaces.repository.local.ImagesRepository
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
 import com.example.taska.presentation.navigation.Navigator
 import com.example.taska.presentation.navigation.NavigatorImpl
@@ -49,4 +51,10 @@ object ModuleApp {
     @Provides
     @Singleton
     fun provideNavigator(): Navigator = NavigatorImpl(startDestination = AppGraph.AllTasksScreen)
+
+    @Provides
+    @Singleton
+    fun provideImagesRepository(@ApplicationContext appContext: Context): ImagesRepository {
+        return ImagesRepositoryImpl(context = appContext)
+    }
 }

@@ -5,7 +5,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -33,17 +31,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil.compose.AsyncImage
 import com.example.taska.R
 import com.example.taska.presentation.constants.TextFieldType
 import com.example.taska.presentation.components.InputTextField
+import com.example.taska.presentation.components.UriImageDialog
+import com.example.taska.presentation.components.UriImageItem
 import com.example.taska.presentation.model.task.Date
 import com.example.taska.presentation.theme.AquaSqueeze
 import com.example.taska.presentation.theme.FruitSalad
@@ -95,7 +91,7 @@ fun TaskCreateScreen(
             RedactorTask(
                 title = uiState.newTask.title,
                 description = uiState.newTask.description,
-                images = uiState.newTask.images,
+                images = uiState.imagesUris,
                 onImageClick = { viewModel.onImageClick(it) },
                 deleteImage = { viewModel.deleteImage(it) },
                 onTitleChange = { viewModel.onTitleChange(it) },
@@ -113,14 +109,12 @@ fun TaskCreateScreen(
         }
     }
 
-    if (uiState.imageToShow != null) {
-        Dialog(onDismissRequest = { viewModel.removeImageToShow() }) {
-            AsyncImage(
-                model = uiState.imageToShow,
-                contentDescription = "Selected image",
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+    uiState.imageToShow?.let { image ->
+        UriImageDialog(
+            imageUri = image,
+            onDismiss = { viewModel.removeImageToShow() },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
@@ -139,39 +133,6 @@ private fun TopCreateTaskBar(
                 contentDescription = "Back screen"
             )
         }
-    }
-}
-
-// +++
-@Composable
-private fun ImageItem(
-    uri: String,
-    onImageClick: (String) -> Unit,
-    deleteImage: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-    ) {
-        AsyncImage(
-            model = uri.toUri(),
-            contentDescription = "Image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(300.dp)
-                .padding(2.dp)
-                .clickable { onImageClick(uri) }
-        )
-        Icon(
-            imageVector = Icons.Default.Clear,
-            contentDescription = "Delete image",
-            modifier = Modifier
-                .size(30.dp)
-                .align(Alignment.TopEnd)
-                .clickable {
-                    deleteImage(uri)
-                }
-        )
     }
 }
 
@@ -234,10 +195,10 @@ fun RedactorTask(
         modifier = Modifier.padding(top = 12.dp)
     ) {
         items(images) { uri ->
-            ImageItem(
+            UriImageItem(
                 uri = uri,
-                onImageClick = { onImageClick(it) },
-                deleteImage = { deleteImage(it) },
+                onImageClick = { onImageClick(uri) },
+                deleteImage = { deleteImage(uri) },
                 modifier = Modifier.size(300.dp)
             )
         }

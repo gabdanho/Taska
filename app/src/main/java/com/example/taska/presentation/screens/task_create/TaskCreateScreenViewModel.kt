@@ -2,6 +2,7 @@ package com.example.taska.presentation.screens.task_create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taska.domain.interfaces.repository.local.ImagesRepository
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
 import com.example.taska.presentation.mappers.toDomainLayer
 import com.example.taska.presentation.model.task.Date
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskCreateScreenViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,
+    private val imagesRepository: ImagesRepository,
     private val navigator: Navigator,
 ) : ViewModel() {
 
@@ -24,10 +26,13 @@ class TaskCreateScreenViewModel @Inject constructor(
     val uiState: StateFlow<TaskCreateScreenUiState> = _uiState.asStateFlow()
 
     fun addImage(uriString: String) {
-        val newImages = _uiState.value.newTask.images + uriString
-        val updateNewTask = _uiState.value.newTask.copy(images = newImages)
+        val newImagesUris = _uiState.value.imagesUris + uriString
+        _uiState.update { state -> state.copy(imagesUris = newImagesUris) }
+    }
 
-        _uiState.update { state -> state.copy(newTask = updateNewTask) }
+    fun deleteImage(uriString: String) {
+        val newImagesUris = _uiState.value.imagesUris - uriString
+        _uiState.update { state -> state.copy(imagesUris = newImagesUris) }
     }
 
     fun onBackButtonClick() {
@@ -35,13 +40,6 @@ class TaskCreateScreenViewModel @Inject constructor(
             createTask()
             navigator.navigatePopBackStack()
         }
-    }
-
-    fun deleteImage(uriString: String) {
-        val newImages = _uiState.value.newTask.images - uriString
-        val updateNewTask = _uiState.value.newTask.copy(images = newImages)
-
-        _uiState.update { state -> state.copy(newTask = updateNewTask) }
     }
 
     fun onTitleChange(value: String) {
@@ -69,6 +67,7 @@ class TaskCreateScreenViewModel @Inject constructor(
     private fun createTask() {
         if (isCanCreateTask()) {
             viewModelScope.launch {
+                saveImagesToStorage()
                 _uiState.value.currentDate?.let { date ->
                     val formattedTask = _uiState.value.newTask.copy(date = date)
                     tasksRepository.addTask(task = formattedTask.toDomainLayer())
@@ -100,6 +99,19 @@ class TaskCreateScreenViewModel @Inject constructor(
                 .take(DESCRIPTION_WORDS)
                 .joinToString(" ")
         _uiState.update { state -> state.copy(newTask = state.newTask.copy(title = newTitle)) }
+    }
+
+    private suspend fun saveImagesToStorage() {
+        val imagesNames = mutableListOf<String>()
+        _uiState.value.imagesUris.forEach { uri ->
+            val fileName = "taska_${System.currentTimeMillis()}.jpg"
+            imagesNames.add(fileName)
+            imagesRepository.saveImage(
+                uri = uri,
+                fileName = fileName
+            )
+        }
+        _uiState.update { state -> state.copy(newTask = state.newTask.copy(images = imagesNames)) }
     }
 
     companion object {

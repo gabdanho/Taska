@@ -10,7 +10,6 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -31,7 +30,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -62,7 +60,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -72,8 +69,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
 import com.example.taska.R
+import com.example.taska.presentation.components.FileImageDialog
+import com.example.taska.presentation.components.FileImageItem
 import com.example.taska.presentation.constants.TextFieldType
 import com.example.taska.presentation.model.task.Date
 import com.example.taska.presentation.components.InputTextField
@@ -164,7 +162,7 @@ fun TasksScreen(
 
     // Image full screen
     uiState.imageToShow?.let { image ->
-        ImageDialog(
+        FileImageDialog(
             image = image,
             onDismiss = { viewModel.changeImageToShow(null) },
             modifier = Modifier.fillMaxWidth(),
@@ -493,22 +491,6 @@ private fun DeleteReminderDialog(
 
 // +++
 @Composable
-private fun ImageDialog(
-    image: String,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Image(
-            painter = rememberAsyncImagePainter(image),
-            contentDescription = "image",
-            modifier = modifier
-        )
-    }
-}
-
-// +++
-@Composable
 private fun TaskCard(
     displayedTask: Task,
     onTitleChange: (Task, String) -> Unit,
@@ -701,31 +683,16 @@ private fun TaskImages(
     deleteImage: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val filesDir = context.filesDir
     LazyRow(modifier = modifier) {
         items(images) { image ->
-            Box(modifier = Modifier.size(300.dp)) {
-                Image(
-                    painter = rememberAsyncImagePainter(image),
-                    contentDescription = "image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(300.dp)
-                        .padding(end = 4.dp)
-                        .clickable {
-                            onImageClick(image)
-                        }
-                )
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Delete image",
-                    modifier = Modifier
-                        .size(30.dp)
-                        .align(Alignment.TopEnd)
-                        .clickable {
-                            deleteImage(image)
-                        }
-                )
-            }
+            FileImageItem(
+                fileName = image,
+                filesDir = filesDir,
+                onImageClick = { onImageClick(image) },
+                deleteImage = { deleteImage(image) }
+            )
         }
     }
 }

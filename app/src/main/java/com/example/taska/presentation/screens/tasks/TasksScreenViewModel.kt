@@ -2,6 +2,7 @@ package com.example.taska.presentation.screens.tasks
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.taska.domain.interfaces.repository.local.ImagesRepository
 import com.example.taska.domain.interfaces.repository.local.TasksRepository
 import com.example.taska.presentation.mappers.toPresentationLayer
 import com.example.taska.presentation.mappers.toDomainLayer
@@ -24,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class TasksScreenViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,
+    private val imagesRepository: ImagesRepository,
     private val navigator: Navigator,
 ) : ViewModel() {
 
@@ -62,9 +64,10 @@ class TasksScreenViewModel @Inject constructor(
         }
     }
 
-    fun deleteImage(task: Task, uriString: String) {
+    fun deleteImage(task: Task, fileName: String) {
         viewModelScope.launch {
-            val updatedImages = task.images - uriString
+            imagesRepository.deleteImage(fileName)
+            val updatedImages = task.images - fileName
             val updatedTask = task.copy(images = updatedImages)
             tasksRepository.updateTask(task = updatedTask.toDomainLayer())
         }
@@ -72,7 +75,10 @@ class TasksScreenViewModel @Inject constructor(
 
     fun addImage(task: Task, uriString: String) {
         viewModelScope.launch {
-            val updatedImages = task.images + uriString
+            val fileName = "taska_${System.currentTimeMillis()}.jpg"
+            imagesRepository.saveImage(uri = uriString, fileName = fileName)
+
+            val updatedImages = task.images + fileName
             val updatedTask = task.copy(images = updatedImages)
             tasksRepository.updateTask(task = updatedTask.toDomainLayer())
         }
@@ -133,8 +139,8 @@ class TasksScreenViewModel @Inject constructor(
         changeIsShowDateTimePicker(false)
     }
 
-    fun changeImageToShow(uriString: String?) {
-        _uiState.update { state -> state.copy(imageToShow = uriString) }
+    fun changeImageToShow(fileName: String?) {
+        _uiState.update { state -> state.copy(imageToShow = fileName) }
     }
 
     private fun getDays() {
