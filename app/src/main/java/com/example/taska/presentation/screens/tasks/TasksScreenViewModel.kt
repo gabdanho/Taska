@@ -13,9 +13,14 @@ import com.example.taska.presentation.navigation.Navigator
 import com.example.taska.presentation.navigation.model.AppGraph
 import com.example.taska.presentation.utils.generateCalendar
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -32,15 +37,22 @@ class TasksScreenViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TasksScreenUiState())
     val uiState: StateFlow<TasksScreenUiState> = _uiState.asStateFlow()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val displayedTasks: StateFlow<List<Task>> = _uiState
+        .map { it.currentDay }
+        .flatMapLatest { day ->
+            tasksRepository.getTasksByDate(day.toDomainLayer())
+        }
+        .map { list -> list.map { it.toPresentationLayer() } }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     init {
         getDays()
-        getTasks()
     }
 
     fun changeCurrentDay(date: Date) {
         viewModelScope.launch {
             _uiState.update { state -> state.copy(currentDay = date) }
-            getTasks()
         }
     }
 
@@ -145,18 +157,5 @@ class TasksScreenViewModel @Inject constructor(
 
     private fun getDays() {
         _uiState.update { state -> state.copy(daysList = generateCalendar()) }
-    }
-
-    fun getTasks() {
-        viewModelScope.launch {
-            tasksRepository
-                .getTasksByDate(date = _uiState.value.currentDay.toDomainLayer())
-                .collect { tasks ->
-                    _uiState.update { state ->
-                        val mappedTasks = tasks.map { it.toPresentationLayer() }
-                        state.copy(displayedTasks = mappedTasks)
-                    }
-                }
-        }
     }
 }

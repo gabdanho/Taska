@@ -94,6 +94,7 @@ fun TasksScreen(
     viewModel: TasksScreenViewModel = hiltViewModel<TasksScreenViewModel>(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val displayedTasks by viewModel.displayedTasks.collectAsState()
 
     Scaffold(
         topBar = {
@@ -106,7 +107,7 @@ fun TasksScreen(
         modifier = modifier
     ) { innerPadding ->
         TasksField(
-            displayedTasks = uiState.displayedTasks,
+            displayedTasks = displayedTasks,
             deleteTask = { viewModel.deleteTask(it) },
             onTitleChange = { task, title -> viewModel.onTitleChange(task, title) },
             onDescriptionChange = { task, description ->

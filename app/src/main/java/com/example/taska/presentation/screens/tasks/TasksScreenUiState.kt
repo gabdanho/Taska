@@ -22,7 +22,6 @@ data class TasksScreenUiState(
     val selectedReminder: Reminder? = null,
     val selectedTask: Task? = null,
     val daysList: List<Date> = emptyList(),
-    val displayedTasks: List<Task> = emptyList(),
     val imageToShow: String? = null,
 
     val selectedDate: LocalDate? = null,
