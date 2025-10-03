@@ -51,13 +51,17 @@ class TasksScreenViewModel @Inject constructor(
             tasksRepository.getTasksByDate(day.toDomainLayer())
         }
         .map { list ->
-            checkAlarms(list.map { it.toPresentationLayer() })
             list.map { task -> task.toPresentationLayer() }
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     init {
         getDays()
+        viewModelScope.launch {
+            displayedTasks.collect { tasks ->
+                checkAlarms(tasks)
+            }
+        }
     }
 
     fun changeCurrentDay(date: Date) {
@@ -167,9 +171,8 @@ class TasksScreenViewModel @Inject constructor(
         }
     }
 
-    fun onTimePicked(context: Context, time: LocalTime) {
+    fun onTimePicked(time: LocalTime) {
         _uiState.update { state -> state.copy(selectedTime = time, isShowTimePicker = false) }
-        createReminder(context)
     }
 
     fun changeImageToShow(fileName: String?) {
@@ -195,7 +198,7 @@ class TasksScreenViewModel @Inject constructor(
         _uiState.update { state -> state.copy(daysList = generateCalendar()) }
     }
 
-    private fun createReminder(context: Context) {
+    fun createReminder(context: Context) {
         viewModelScope.launch {
             val task = _uiState.value.selectedTask
             val date = _uiState.value.selectedDate?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))

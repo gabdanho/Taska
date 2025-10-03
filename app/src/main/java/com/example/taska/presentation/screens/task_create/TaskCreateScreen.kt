@@ -42,6 +42,7 @@ import com.example.taska.presentation.components.UriImageDialog
 import com.example.taska.presentation.components.UriImageItem
 import com.example.taska.presentation.model.task.Date
 import com.example.taska.presentation.theme.AquaSqueeze
+import com.example.taska.presentation.theme.BattleshipGrey
 import com.example.taska.presentation.theme.FruitSalad
 
 @Composable
@@ -81,30 +82,33 @@ fun TaskCreateScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(AquaSqueeze)
-                .verticalScroll(scrollState)
-        ) {
-            RedactorTask(
-                title = uiState.newTask.title,
-                description = uiState.newTask.description,
-                images = uiState.imagesUris,
-                onImageClick = { viewModel.onImageClick(it) },
-                deleteImage = { viewModel.deleteImage(it) },
-                onTitleChange = { viewModel.onTitleChange(it) },
-                onDescriptionChange = { viewModel.onDescriptionChange(it) }
-            )
-        }
         Box(
-            contentAlignment = Alignment.BottomEnd,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(AquaSqueeze)
+                    .verticalScroll(scrollState)
+            ) {
+                RedactorTask(
+                    title = uiState.newTask.title,
+                    description = uiState.newTask.description,
+                    images = uiState.imagesUris,
+                    onImageClick = { viewModel.onImageClick(it) },
+                    deleteImage = { viewModel.deleteImage(it) },
+                    onTitleChange = { viewModel.onTitleChange(it) },
+                    onDescriptionChange = { viewModel.onDescriptionChange(it) }
+                )
+            }
+
             AddImageFloatingActionButton(
                 onClick = { galleryLauncher.launch("image/*") },
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
             )
         }
     }
@@ -129,6 +133,7 @@ private fun TopCreateTaskBar(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                tint = BattleshipGrey,
                 contentDescription = "Back screen"
             )
         }
@@ -138,7 +143,7 @@ private fun TopCreateTaskBar(
 @Composable
 private fun AddImageFloatingActionButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     FloatingActionButton(
         onClick = onClick,

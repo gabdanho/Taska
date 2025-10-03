@@ -9,14 +9,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationManagerCompat
 import com.example.taska.presentation.screens.main.MainScreen
 import com.example.taska.presentation.theme.TaskaTheme
@@ -27,20 +20,20 @@ class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (!isGranted) {
-                Toast.makeText(this, "Нет разрешения на получение уведомлений", Toast.LENGTH_LONG)
-                    .show()
+                Toast.makeText(
+                    this,
+                    "Нет разрешения на получение уведомлений",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkPermissions()
-        enableEdgeToEdge()
         setContent {
             TaskaTheme {
-                Surface(modifier = Modifier.padding(WindowInsets.systemBars.asPaddingValues())) {
-                    MainScreen()
-                }
+                MainScreen()
             }
         }
     }

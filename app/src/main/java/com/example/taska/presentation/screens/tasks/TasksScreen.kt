@@ -176,8 +176,14 @@ fun TasksScreen(
 
     if (uiState.isShowTimePicker) {
         TimePicker(
-            onDismissTime = { viewModel.changeIsShowTimePicker(false) },
-            onTimePicked = { time -> viewModel.onTimePicked(context = context, time = time) },
+            onDismissTime = {
+                viewModel.changeIsShowTimePicker(false)
+                viewModel.changeIsShowDatePicker(true)
+            },
+            onTimePicked = { time ->
+                viewModel.onTimePicked(time)
+                viewModel.createReminder(context)
+            },
         )
     }
 
@@ -535,7 +541,7 @@ private fun TaskCard(
         ) {
             TaskTitle(
                 isExpanded = isExpanded,
-                title = displayedTask.title,
+                displayedTask = displayedTask,
                 hide = { isExpanded = false },
                 onTitleChange = { title -> onTitleChange(displayedTask, title) },
             )
@@ -560,13 +566,13 @@ private fun TaskCard(
 
 @Composable
 private fun TaskTitle(
-    title: String,
+    displayedTask: Task,
     isExpanded: Boolean,
     onTitleChange: (String) -> Unit,
     hide: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var localTitle by remember { mutableStateOf(title) }
+    var localTitle by remember(displayedTask.id) { mutableStateOf(displayedTask.title) }
 
     Row(modifier = modifier) {
         if (isExpanded) {
@@ -605,7 +611,7 @@ private fun TaskMoreInfo(
     openDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var localDescription by remember { mutableStateOf(displayedTask.description) }
+    var localDescription by remember(displayedTask.id) { mutableStateOf(displayedTask.description) }
 
     if (isExpanded) {
         Column(modifier = modifier) {

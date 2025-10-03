@@ -7,17 +7,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.example.taska.presentation.constants.TextFieldType
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun InputTextField(
@@ -46,29 +45,27 @@ fun InputTextField(
         onValueChange = onValueChange,
         decorationBox = { innerTextField ->
             var isShowCursor by remember { mutableStateOf(false) }
-            val coroutineScope = rememberCoroutineScope()
 
-            LaunchedEffect(Unit) {
-                coroutineScope.launch {
-                    while (value.isEmpty()) {
-                        isShowCursor = !isShowCursor
-                        delay(cursorDelayAnimation)
-                    }
-                    isShowCursor = false
+            LaunchedEffect(value, isFocused) {
+                while (value.isEmpty()) {
+                    isShowCursor = !isShowCursor
+                    delay(cursorDelayAnimation)
                 }
+                isShowCursor = false
             }
-            if (value.isEmpty() && enabled) {
-                if (isShowCursor && isFocused) {
-                    Text(
-                        text = "|",
-                        fontSize = typeField.fontSize.sp
-                    )
-                }
+            if (value.isBlank() && enabled) {
                 Text(
                     text = typeField.text,
                     fontSize = typeField.fontSize.sp,
                     color = typeField.textColor.copy(alpha = 0.4f)
                 )
+                if (isShowCursor && isFocused) {
+                    Text(
+                        text = "|",
+                        color = Color.Black,
+                        fontSize = typeField.fontSize.sp
+                    )
+                }
             } else innerTextField()
         },
         textStyle = TextStyle.Default.copy(

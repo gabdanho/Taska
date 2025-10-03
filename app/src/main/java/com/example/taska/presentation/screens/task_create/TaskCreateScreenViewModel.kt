@@ -64,14 +64,12 @@ class TaskCreateScreenViewModel @Inject constructor(
         _uiState.update { state -> state.copy(currentDate = date) }
     }
 
-    private fun createTask() {
+    private suspend fun createTask() {
         if (isCanCreateTask()) {
-            viewModelScope.launch {
-                saveImagesToStorage()
-                _uiState.value.currentDate?.let { date ->
-                    val formattedTask = _uiState.value.newTask.copy(date = date)
-                    tasksRepository.addTask(task = formattedTask.toDomainLayer())
-                }
+            saveImagesToStorage()
+            _uiState.value.currentDate?.let { date ->
+                val formattedTask = _uiState.value.newTask.copy(date = date)
+                tasksRepository.addTask(task = formattedTask.toDomainLayer())
             }
         }
     }
@@ -93,8 +91,10 @@ class TaskCreateScreenViewModel @Inject constructor(
     }
 
     private fun createTitleFromDescription() {
+        val description = _uiState.value.newTask.description
+
         val newTitle =
-            _uiState.value.newTask.description
+            description
                 .split(" ")
                 .take(DESCRIPTION_WORDS)
                 .joinToString(" ")
@@ -106,10 +106,7 @@ class TaskCreateScreenViewModel @Inject constructor(
         _uiState.value.imagesUris.forEach { uri ->
             val fileName = "taska_${System.currentTimeMillis()}.jpg"
             imagesNames.add(fileName)
-            imagesRepository.saveImage(
-                uri = uri,
-                fileName = fileName
-            )
+            imagesRepository.saveImage(uri, fileName)
         }
         _uiState.update { state -> state.copy(newTask = state.newTask.copy(images = imagesNames)) }
     }
