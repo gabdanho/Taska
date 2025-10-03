@@ -42,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -50,7 +51,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -87,7 +87,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-// +++
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,
@@ -171,7 +170,6 @@ fun TasksScreen(
     }
 }
 
-// +++
 @Composable
 private fun TopAppBarScreen(
     currentDay: Date,
@@ -226,7 +224,6 @@ private fun TopAppBarScreen(
     }
 }
 
-// +++
 @Composable
 private fun TasksField(
     displayedTasks: List<Task>,
@@ -272,7 +269,6 @@ private fun TasksField(
     }
 }
 
-// +++
 @Composable
 private fun DateAndTimePicker(
     isShowDatePicker: Boolean,
@@ -312,7 +308,6 @@ private fun DateAndTimePicker(
     }
 }
 
-// +++
 @Composable
 private fun DismissDeleteBox(modifier: Modifier = Modifier) {
     Box(
@@ -331,7 +326,6 @@ private fun DismissDeleteBox(modifier: Modifier = Modifier) {
     }
 }
 
-// +++
 @Composable
 private fun DayButton(
     day: Date,
@@ -379,7 +373,6 @@ private fun DayButton(
     }
 }
 
-// +++
 @Composable
 private fun TaskListItem(
     displayedTask: Task,
@@ -393,34 +386,33 @@ private fun TaskListItem(
     addImage: (Task, String) -> Unit,
     openDatePicker: () -> Unit,
     modifier: Modifier = Modifier,
+    delayToShowItem: Long = 75L,
+    durationMillis: Int = 300,
 ) {
     Box(modifier = modifier) {
         var isVisible by rememberSaveable { mutableStateOf(false) }
-        var progress by remember { mutableFloatStateOf(0f) }
+        val dismissState = rememberSwipeToDismissBoxState(
+            SwipeToDismissBoxValue.Settled,
+            SwipeToDismissBoxDefaults.positionalThreshold
+        )
 
         LaunchedEffect(Unit) {
-            delay(75L * index)
+            delay(delayToShowItem * index)
             isVisible = true
         }
 
         AnimatedVisibility(
             visible = isVisible,
             enter = scaleIn(),
-            exit = scaleOut(tween(300))
+            exit = scaleOut(tween(durationMillis))
         ) {
-            val dismissState = rememberSwipeToDismissBoxState(
-                confirmValueChange = {
-                    if (it == SwipeToDismissBoxValue.EndToStart && progress >= 0.5f) {
-                        deleteTask(displayedTask)
-                        true
-                    } else {
-                        false
-                    }
-                }
-            )
 
-            LaunchedEffect(dismissState.progress) {
-                progress = dismissState.progress
+            LaunchedEffect(dismissState.targetValue) {
+                if (dismissState.targetValue == SwipeToDismissBoxValue.EndToStart) {
+                    isVisible = false
+                    delay(durationMillis.toLong())
+                    deleteTask(displayedTask)
+                }
             }
 
             SwipeToDismissBox(
@@ -453,7 +445,6 @@ private fun TaskListItem(
     }
 }
 
-// +++
 @Composable
 private fun DeleteReminderDialog(
     selectedReminder: Reminder,
@@ -490,7 +481,6 @@ private fun DeleteReminderDialog(
     }
 }
 
-// +++
 @Composable
 private fun TaskCard(
     displayedTask: Task,
@@ -544,7 +534,6 @@ private fun TaskCard(
     }
 }
 
-// +++
 @Composable
 private fun TaskTitle(
     title: String,
@@ -580,7 +569,6 @@ private fun TaskTitle(
     }
 }
 
-// +++
 @Composable
 private fun TaskMoreInfo(
     displayedTask: Task,
@@ -634,7 +622,6 @@ private fun TaskMoreInfo(
     }
 }
 
-// +++
 @Composable
 private fun ActionButtons(
     addImage: (String) -> Unit,
@@ -676,7 +663,6 @@ private fun ActionButtons(
     }
 }
 
-// +++
 @Composable
 private fun TaskImages(
     images: List<String>,
@@ -698,7 +684,6 @@ private fun TaskImages(
     }
 }
 
-// +++
 @Composable
 private fun TaskReminders(
     reminders: List<Reminder>,
@@ -728,7 +713,6 @@ private fun TaskReminders(
     }
 }
 
-//+++
 @Composable
 private fun AddFloatingActionButton(
     onCreateTaskButtonClick: () -> Unit,

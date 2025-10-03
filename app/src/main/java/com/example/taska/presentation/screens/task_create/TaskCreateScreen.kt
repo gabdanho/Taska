@@ -118,7 +118,6 @@ fun TaskCreateScreen(
     }
 }
 
-// +++
 @Composable
 private fun TopCreateTaskBar(
     onBackClick: () -> Unit,
@@ -136,7 +135,6 @@ private fun TopCreateTaskBar(
     }
 }
 
-// +++
 @Composable
 private fun AddImageFloatingActionButton(
     onClick: () -> Unit,
@@ -158,7 +156,6 @@ private fun AddImageFloatingActionButton(
     }
 }
 
-// +++
 @Composable
 fun RedactorTask(
     title: String,
