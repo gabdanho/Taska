@@ -3,9 +3,11 @@ package com.example.taska.presentation.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import com.example.taska.R
 import java.io.File
 
 @Composable
@@ -20,7 +22,7 @@ fun FileImageDialog(
 
         AsyncImage(
             model = file,
-            contentDescription = "Selected image",
+            contentDescription = stringResource(R.string.content_selected_image),
             modifier = modifier
         )
     }
@@ -37,7 +39,7 @@ fun UriImageDialog(
 
         AsyncImage(
             model = uri,
-            contentDescription = "Selected image",
+            contentDescription = stringResource(R.string.content_selected_image),
             modifier = modifier
         )
     }

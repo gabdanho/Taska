@@ -40,6 +40,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
@@ -57,16 +58,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.taska.R
@@ -82,7 +81,12 @@ import com.example.taska.presentation.theme.AquaSqueeze
 import com.example.taska.presentation.theme.BattleshipGrey
 import com.example.taska.presentation.theme.Brick
 import com.example.taska.presentation.theme.FruitSalad
-import com.example.taska.presentation.utils.convertToText
+import com.example.taska.presentation.mappers.convertToStringResName
+import com.example.taska.presentation.mappers.resources.StringToResourceIdMapperImpl
+import com.example.taska.presentation.theme.IconTint
+import com.example.taska.presentation.theme.SecondTextColor
+import com.example.taska.presentation.theme.TextColor
+import com.example.taska.presentation.theme.defaultDimensions
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -134,12 +138,12 @@ fun TasksScreen(
             modifier = Modifier
                 .background(AquaSqueeze)
                 .fillMaxSize()
-                .padding(12.dp)
+                .padding(defaultDimensions.medium)
                 .padding(innerPadding)
         )
         AddFloatingActionButton(
             onCreateTaskButtonClick = { viewModel.onCreateTaskClick() },
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(defaultDimensions.small)
         )
     }
 
@@ -209,8 +213,7 @@ private fun TopAppBarScreen(
         derivedStateOf {
             daysList.getOrNull(scrollState.firstVisibleItemIndex)
                 ?.month
-                ?.convertToText()
-                .orEmpty()
+                ?.convertToStringResName()
         }
     }
 
@@ -222,30 +225,32 @@ private fun TopAppBarScreen(
         verticalArrangement = Arrangement.Center,
         modifier = modifier
     ) {
-        Text(
-            text = currentMonth,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.W600,
-            color = Color.Black,
-            fontSize = 22.sp,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp)
-        )
+        currentMonth?.let {
+            Text(
+                text = stringResource(id = StringToResourceIdMapperImpl().map(resId = it)),
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.W600,
+                color = TextColor,
+                style = MaterialTheme.typography.displaySmall,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = defaultDimensions.small)
+            )
+        }
         LazyRow(
             state = scrollState,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(defaultDimensions.medium),
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = BattleshipGrey)
-                .padding(12.dp)
+                .padding(defaultDimensions.medium)
         ) {
             items(daysList) { day ->
                 DayButton(
                     day = day,
                     isDaySelected = currentDay == day,
                     changeCurrentDay = changeCurrentDay,
-                    modifier = Modifier.size(60.dp)
+                    modifier = Modifier.size(defaultDimensions.dayButtonSize)
                 )
             }
         }
@@ -346,9 +351,9 @@ private fun DismissDeleteBox(modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = Icons.Default.Delete,
-            contentDescription = "Удалить",
-            tint = Color.White,
-            modifier = Modifier.padding(end = 16.dp)
+            contentDescription = stringResource(R.string.content_delete_task),
+            tint = IconTint,
+            modifier = Modifier.padding(end = defaultDimensions.big)
         )
     }
 }
@@ -363,7 +368,7 @@ private fun DayButton(
     val focusManager = LocalFocusManager.current
 
     val borderRadius by animateDpAsState(
-        targetValue = if (isDaySelected) 20.dp else 0.dp,
+        targetValue = if (isDaySelected) defaultDimensions.borderDayButtonDp else defaultDimensions.emptyDp,
         animationSpec = tween(300)
     )
 
@@ -376,7 +381,7 @@ private fun DayButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = AquaSpring
         ),
-        contentPadding = PaddingValues(0.dp),
+        contentPadding = PaddingValues(defaultDimensions.emptyDp),
         modifier = modifier
     ) {
         Column(
@@ -387,14 +392,14 @@ private fun DayButton(
             Text(
                 text = day.number.toString(),
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                fontSize = 18.sp
+                color = TextColor,
+                style = MaterialTheme.typography.labelLarge
             )
             Text(
-                text = day.week.convertToText(),
+                text = stringResource(id = StringToResourceIdMapperImpl().map(resId = day.week.convertToStringResName())),
                 fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                fontSize = 10.sp
+                color = TextColor,
+                style = MaterialTheme.typography.labelLarge
             )
         }
     }
@@ -445,7 +450,7 @@ private fun TaskListItem(
             SwipeToDismissBox(
                 state = dismissState,
                 backgroundContent = {
-                    DismissDeleteBox(modifier = Modifier.padding(bottom = 8.dp))
+                    DismissDeleteBox(modifier = Modifier.padding(bottom = defaultDimensions.small))
                 },
                 enableDismissFromStartToEnd = false
             ) {
@@ -470,7 +475,7 @@ private fun TaskListItem(
                     openDatePicker = { openDatePicker(displayedTask) },
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 8.dp)
+                        .padding(bottom = defaultDimensions.small)
                 )
             }
         }
@@ -496,18 +501,22 @@ private fun DeleteReminderDialog(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Удалить уведомление на ${selectedReminder.date} ${selectedReminder.time}?",
-                    color = Color.Black,
-                    modifier = Modifier.padding(8.dp)
+                    text = stringResource(
+                        R.string.text_delete_reminder,
+                        selectedReminder.date,
+                        selectedReminder.time
+                    ),
+                    color = TextColor,
+                    modifier = Modifier.padding(defaultDimensions.small)
                 )
                 Button(
                     onClick = { deleteReminder() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = BattleshipGrey
                     ),
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    modifier = Modifier.padding(bottom = defaultDimensions.small)
                 ) {
-                    Text(text = "Удалить", color = Color.White)
+                    Text(text = stringResource(R.string.text_delete), color = SecondTextColor)
                 }
             }
         }
@@ -536,7 +545,7 @@ private fun TaskCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 12.dp)
+                .padding(bottom = defaultDimensions.medium)
                 .animateContentSize(animationSpec = tween(200))
         ) {
             TaskTitle(
@@ -581,8 +590,8 @@ private fun TaskTitle(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    tint = Color.White,
-                    contentDescription = "Hide card description"
+                    tint = IconTint,
+                    contentDescription = stringResource(R.string.content_hide_description)
                 )
             }
         }
@@ -593,7 +602,7 @@ private fun TaskTitle(
             enabled = isExpanded,
             onLeaveFocus = { onTitleChange(localTitle) },
             modifier = Modifier
-                .padding(12.dp)
+                .padding(defaultDimensions.medium)
                 .fillMaxWidth()
         )
     }
@@ -622,7 +631,7 @@ private fun TaskMoreInfo(
                 maxLines = Int.MAX_VALUE,
                 onLeaveFocus = { onDescriptionChange(localDescription) },
                 modifier = Modifier
-                    .padding(12.dp)
+                    .padding(defaultDimensions.medium)
                     .fillMaxWidth()
             )
             if (displayedTask.images.isNotEmpty()) {
@@ -630,14 +639,14 @@ private fun TaskMoreInfo(
                     images = displayedTask.images,
                     deleteImage = deleteImage,
                     onImageClick = onImageClick,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = defaultDimensions.small)
                 )
             }
             if (displayedTask.reminders.isNotEmpty()) {
                 TaskReminders(
                     reminders = displayedTask.reminders,
                     showDeleteReminderDialog = { reminder -> showDeleteReminderDialog(reminder) },
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = defaultDimensions.small)
                 )
             }
             ActionButtons(
@@ -647,10 +656,10 @@ private fun TaskMoreInfo(
         }
     } else if (displayedTask.description.isNotEmpty()) {
         Text(
-            text = "...",
-            fontSize = 12.sp,
-            color = Color.White,
-            modifier = Modifier.padding(horizontal = 8.dp)
+            text = stringResource(R.string.text_more),
+            style = MaterialTheme.typography.labelMedium,
+            color = SecondTextColor,
+            modifier = Modifier.padding(horizontal = defaultDimensions.small)
         )
     }
 }
@@ -671,26 +680,26 @@ private fun ActionButtons(
     Row(modifier = modifier) {
         IconButton(
             onClick = { galleryLauncher.launch("image/*") },
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.size(defaultDimensions.actionButtonSize)
         ) {
             Icon(
                 painter = painterResource(R.drawable.add_img),
-                tint = Color.White,
-                contentDescription = "Add image",
-                modifier = Modifier.size(40.dp)
+                tint = IconTint,
+                contentDescription = stringResource(R.string.content_add_image),
+                modifier = Modifier.size(defaultDimensions.iconSize)
             )
         }
         IconButton(
             onClick = { openDatePicker() },
-            modifier = Modifier.size(50.dp)
+            modifier = Modifier.size(defaultDimensions.actionButtonSize)
         ) {
             Icon(
                 imageVector = Icons.Default.Notifications,
-                tint = Color.White,
-                contentDescription = "Add notification",
+                tint = IconTint,
+                contentDescription = stringResource(R.string.content_add_reminder),
                 modifier = Modifier
-                    .size(40.dp)
-                    .padding(start = 8.dp)
+                    .size(defaultDimensions.iconSize)
+                    .padding(start = defaultDimensions.small)
             )
         }
     }
@@ -730,7 +739,7 @@ private fun TaskReminders(
                     containerColor = AquaSpring
                 ),
                 modifier = Modifier
-                    .padding(8.dp)
+                    .padding(defaultDimensions.small)
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onLongPress = { showDeleteReminderDialog(reminder) }
@@ -738,9 +747,13 @@ private fun TaskReminders(
                     }
             ) {
                 Text(
-                    text = "${reminder.date} ${reminder.time}",
-                    color = Color.Black,
-                    modifier = Modifier.padding(6.dp)
+                    text = stringResource(
+                        R.string.text_reminder_date_and_time,
+                        reminder.date,
+                        reminder.time
+                    ),
+                    color = TextColor,
+                    modifier = Modifier.padding(defaultDimensions.verySmall)
                 )
             }
         }
@@ -759,14 +772,14 @@ private fun AddFloatingActionButton(
         FloatingActionButton(
             onClick = { onCreateTaskButtonClick() },
             shape = RectangleShape,
-            elevation = FloatingActionButtonDefaults.elevation(16.dp),
+            elevation = FloatingActionButtonDefaults.elevation(defaultDimensions.fabElevation),
             containerColor = FruitSalad,
             modifier = modifier
         ) {
             Text(
-                text = "+",
-                color = Color.White,
-                fontSize = 24.sp
+                text = stringResource(R.string.text_plus),
+                color = SecondTextColor,
+                style = MaterialTheme.typography.displayMedium
             )
         }
     }

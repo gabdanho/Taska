@@ -4,9 +4,7 @@ import androidx.room.TypeConverter
 
 class ImageIdListConverter {
     @TypeConverter
-    fun toString(list: List<String>): String {
-        return list.joinToString(separator = "||")
-    }
+    fun toString(list: List<String>): String = list.joinToString(separator = "||")
 
     @TypeConverter
     fun toList(string: String): List<String> {

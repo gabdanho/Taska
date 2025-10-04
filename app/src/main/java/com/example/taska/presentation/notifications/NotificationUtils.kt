@@ -10,11 +10,13 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
+private const val DATE_TIME_FORMATTER = "dd.MM.yyyy HH:mm"
+
 object NotificationUtils {
 
     fun scheduleReminder(context: Context, id: Int, text: String, date: String, time: String): Boolean {
         try {
-            val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+            val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)
             val dateTime = LocalDateTime.parse("$date $time", formatter)
             val epochMillis = dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             val pendingIntent = getPendingIntent(context, id, text)
@@ -51,7 +53,7 @@ object NotificationUtils {
     }
 
     fun isReminderInPast(date: String, time: String): Boolean {
-        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
+        val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)
         val reminderDateTime = LocalDateTime.parse("$date $time", formatter)
         val now = LocalDateTime.now(ZoneId.systemDefault())
         return reminderDateTime.isBefore(now)

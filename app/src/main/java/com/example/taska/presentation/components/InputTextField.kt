@@ -12,10 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
 import com.example.taska.presentation.constants.TextFieldType
+import com.example.taska.presentation.mappers.resources.StringToResourceIdMapperImpl
+import com.example.taska.presentation.theme.TextColor
+import com.example.taska.presentation.theme.TextPlaceholder
 import kotlinx.coroutines.delay
 
 @Composable
@@ -54,15 +57,17 @@ fun InputTextField(
                 isShowCursor = false
             }
             if (value.isBlank() && enabled) {
-                Text(
-                    text = typeField.text,
-                    fontSize = typeField.fontSize.sp,
-                    color = typeField.textColor.copy(alpha = 0.4f)
-                )
+                typeField.textResName?.let {
+                    Text(
+                        text = stringResource(id = StringToResourceIdMapperImpl().map(resId = typeField.textResName)),
+                        fontSize = typeField.fontSize.sp,
+                        color = TextPlaceholder
+                    )
+                }
                 if (isShowCursor && isFocused) {
                     Text(
                         text = "|",
-                        color = Color.Black,
+                        color = TextColor,
                         fontSize = typeField.fontSize.sp
                     )
                 }

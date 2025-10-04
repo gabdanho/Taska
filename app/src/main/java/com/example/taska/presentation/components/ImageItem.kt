@@ -11,9 +11,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import com.example.taska.R
+import com.example.taska.presentation.theme.defaultDimensions
 import java.io.File
 
 @Composable
@@ -31,15 +33,15 @@ fun UriImageItem(
             contentDescription = "Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(300.dp)
-                .padding(2.dp)
+                .size(defaultDimensions.imageSize)
+                .padding(defaultDimensions.ultraSmall)
                 .clickable { onImageClick() }
         )
         Icon(
             imageVector = Icons.Default.Clear,
             contentDescription = "Delete image",
             modifier = Modifier
-                .size(30.dp)
+                .size(defaultDimensions.iconSize)
                 .align(Alignment.TopEnd)
                 .clickable { deleteImage() }
         )
@@ -60,18 +62,18 @@ fun FileImageItem(
     ) {
         AsyncImage(
             model = file,
-            contentDescription = "Image",
+            contentDescription = stringResource(R.string.content_image),
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(300.dp)
-                .padding(2.dp)
+                .size(defaultDimensions.imageSize)
+                .padding(defaultDimensions.ultraSmall)
                 .clickable { onImageClick() }
         )
         Icon(
             imageVector = Icons.Default.Clear,
-            contentDescription = "Delete image",
+            contentDescription = stringResource(R.string.content_delete_image),
             modifier = Modifier
-                .size(30.dp)
+                .size(defaultDimensions.iconSize)
                 .align(Alignment.TopEnd)
                 .clickable { deleteImage() }
         )

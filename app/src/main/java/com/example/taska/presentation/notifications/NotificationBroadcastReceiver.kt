@@ -19,7 +19,7 @@ class NotificationBroadcastReceiver : BroadcastReceiver() {
             val id = intent?.getIntExtra("id", 0)
             val notificationManager = NotificationManagerCompat.from(context)
             val notificationBuilder = NotificationCompat.Builder(context, TaskaApplication.channelId)
-                .setContentTitle("Напоминание!")
+                .setContentTitle(context.getString(R.string.notification_reminder))
                 .setContentText(text)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

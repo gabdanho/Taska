@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
+
     @Query("SELECT * FROM tasks WHERE date = :selectedDate")
     fun getTasksByDate(selectedDate: Date): Flow<List<Task>>
 

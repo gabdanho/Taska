@@ -10,6 +10,11 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+val TextPlaceholder = Color.Black.copy(alpha = 0.4f)
+val TextColor = Color.Black
+val SecondTextColor = Color.White
+val IconTint = Color.White
+
 val BattleshipGrey = Color(0xFF4F564E)
 val AquaSpring = Color(0xFFEAEFEA)
 val AquaSqueeze = Color(0xFFDAE0DA)

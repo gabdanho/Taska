@@ -29,11 +29,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.taska.R
 import com.example.taska.presentation.constants.TextFieldType
@@ -44,6 +43,8 @@ import com.example.taska.presentation.model.task.Date
 import com.example.taska.presentation.theme.AquaSqueeze
 import com.example.taska.presentation.theme.BattleshipGrey
 import com.example.taska.presentation.theme.FruitSalad
+import com.example.taska.presentation.theme.IconTint
+import com.example.taska.presentation.theme.defaultDimensions
 
 @Composable
 fun TaskCreateScreen(
@@ -60,7 +61,8 @@ fun TaskCreateScreen(
             if (uri != null) {
                 viewModel.addImage(uri.toString())
             } else {
-                Toast.makeText(context, "Изображение не было выбрано", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context,
+                    context.getString(R.string.text_image_is_not_choosed), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -108,7 +110,7 @@ fun TaskCreateScreen(
                 onClick = { galleryLauncher.launch("image/*") },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(8.dp)
+                    .padding(defaultDimensions.small)
             )
         }
     }
@@ -134,7 +136,7 @@ private fun TopCreateTaskBar(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 tint = BattleshipGrey,
-                contentDescription = "Back screen"
+                contentDescription = stringResource(R.string.content_back_screen)
             )
         }
     }
@@ -148,15 +150,15 @@ private fun AddImageFloatingActionButton(
     FloatingActionButton(
         onClick = onClick,
         shape = RectangleShape,
-        elevation = FloatingActionButtonDefaults.elevation(16.dp),
+        elevation = FloatingActionButtonDefaults.elevation(defaultDimensions.fabElevation),
         containerColor = FruitSalad,
         modifier = modifier
     ) {
         Icon(
             painter = painterResource(R.drawable.add_img),
-            tint = Color.White,
-            contentDescription = "Add image",
-            modifier = Modifier.size(40.dp)
+            tint = IconTint,
+            contentDescription = stringResource(R.string.content_add_image),
+            modifier = Modifier.size(defaultDimensions.iconSize)
         )
     }
 }
@@ -179,7 +181,7 @@ fun RedactorTask(
             onValueChange = { onTitleChange(it) },
             autoFocus = true,
             modifier = Modifier
-                .padding(12.dp)
+                .padding(defaultDimensions.medium)
                 .fillMaxWidth()
         )
         InputTextField(
@@ -187,18 +189,18 @@ fun RedactorTask(
             value = description,
             onValueChange = { onDescriptionChange(it) },
             modifier = Modifier
-                .padding(12.dp)
+                .padding(defaultDimensions.medium)
                 .fillMaxWidth()
         )
         LazyRow(
-            modifier = Modifier.padding(top = 12.dp)
+            modifier = Modifier.padding(top = defaultDimensions.medium)
         ) {
             items(images) { uri ->
                 UriImageItem(
                     uri = uri,
                     onImageClick = { onImageClick(uri) },
                     deleteImage = { deleteImage(uri) },
-                    modifier = Modifier.size(300.dp)
+                    modifier = Modifier.size(defaultDimensions.imageSize)
                 )
             }
         }
