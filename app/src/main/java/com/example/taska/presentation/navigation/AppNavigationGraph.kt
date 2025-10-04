@@ -11,6 +11,11 @@ import com.example.taska.presentation.screens.task_create.TaskCreateScreen
 import com.example.taska.presentation.screens.tasks.TasksScreen
 import kotlin.reflect.typeOf
 
+/**
+ * Построение навграфа приложения.
+ *
+ * @param modifier модификатор для экранов
+ */
 fun NavGraphBuilder.appGraph(
     modifier: Modifier = Modifier
 ) {

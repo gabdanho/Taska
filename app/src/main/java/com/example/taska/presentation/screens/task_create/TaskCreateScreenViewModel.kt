@@ -15,6 +15,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/**
+ * ViewModel для [TaskCreateScreen].
+ *
+ * @param tasksRepository репозиторий задач
+ * @param imagesRepository репозиторий изображений
+ * @param navigator навигация между экранами
+ */
 @HiltViewModel
 class TaskCreateScreenViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,

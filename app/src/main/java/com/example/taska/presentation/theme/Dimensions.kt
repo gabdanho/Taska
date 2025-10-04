@@ -3,6 +3,9 @@ package com.example.taska.presentation.theme
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/**
+ * Дименшены для экрана
+ */
 data class Dimensions(
     val emptyDp: Dp,
     val ultraSmall: Dp,
@@ -18,6 +21,9 @@ data class Dimensions(
     val actionButtonSize: Dp,
 )
 
+/**
+ * Дименшены по умолчанию
+ */
 val defaultDimensions = Dimensions(
     emptyDp = 0.dp,
     ultraSmall = 2.dp,

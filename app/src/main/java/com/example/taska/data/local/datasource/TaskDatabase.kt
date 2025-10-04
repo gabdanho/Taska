@@ -11,6 +11,11 @@ import com.example.taska.data.local.converters.RemindersConverter
 import com.example.taska.data.local.dao.TaskDao
 import com.example.taska.data.local.entity.Task
 
+/**
+ * База данных для хранения задач.
+ *
+ * Использует конвертеры: [DayConverter], [ImageIdListConverter], [RemindersConverter].
+ */
 @TypeConverters(DayConverter::class, ImageIdListConverter::class, RemindersConverter::class)
 @Database(entities = [Task::class], version = 6)
 abstract class TaskDatabase : RoomDatabase() {
@@ -26,7 +31,7 @@ abstract class TaskDatabase : RoomDatabase() {
                     TaskDatabase::class.java,
                     "app_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance
 

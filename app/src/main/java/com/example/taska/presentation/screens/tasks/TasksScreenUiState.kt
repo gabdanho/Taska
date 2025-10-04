@@ -6,6 +6,20 @@ import com.example.taska.presentation.model.task.Task
 import java.time.LocalDate
 import java.time.LocalTime
 
+/**
+ * UI-состояние для [TasksScreen].
+ *
+ * @param currentDay выбранный день
+ * @param isShowDeleteReminderDialog флаг отображения диалога удаления напоминания
+ * @param isShowDatePicker флаг отображения выбора даты
+ * @param isShowTimePicker флаг отображения выбора времени
+ * @param selectedReminder выбранное напоминание
+ * @param selectedTask выбранная задача
+ * @param daysList список дней для календаря
+ * @param imageToShow изображение для просмотра
+ * @param selectedDate выбранная дата для нового напоминания
+ * @param selectedTime выбранное время для нового напоминания
+ */
 data class TasksScreenUiState(
     val currentDay: Date = LocalDate.now().let {
         Date(

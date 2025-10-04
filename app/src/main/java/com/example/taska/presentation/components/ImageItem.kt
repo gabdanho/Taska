@@ -18,6 +18,14 @@ import com.example.taska.R
 import com.example.taska.presentation.theme.defaultDimensions
 import java.io.File
 
+/**
+ * Элемент изображения из URI с кнопкой удаления.
+ *
+ * @param uri строковый uri изображения
+ * @param onImageClick действие при клике по изображению
+ * @param deleteImage действие при удалении
+ * @param modifier модификатор
+ */
 @Composable
 fun UriImageItem(
     uri: String,
@@ -48,6 +56,15 @@ fun UriImageItem(
     }
 }
 
+/**
+ * Элемент изображения из файловой системы с кнопкой удаления.
+ *
+ * @param fileName имя файла изображения
+ * @param filesDir директория файлов
+ * @param onImageClick действие при клике по изображению
+ * @param deleteImage действие при удалении
+ * @param modifier модификатор
+ */
 @Composable
 fun FileImageItem(
     fileName: String,

@@ -9,9 +9,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class AppGraph : NavigationDestination {
 
+    /** Экран всех задач. */
     @Serializable
     data object AllTasksScreen : AppGraph()
 
+    /** Экран создания задачи. */
     @Serializable
     data class TaskCreateScreen(val date: Date = Date()) : AppGraph()
 }

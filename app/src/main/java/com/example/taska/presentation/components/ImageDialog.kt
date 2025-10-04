@@ -10,6 +10,13 @@ import coil.compose.AsyncImage
 import com.example.taska.R
 import java.io.File
 
+/**
+ * Диалог отображения изображения из файла.
+ *
+ * @param image имя файла изображения
+ * @param onDismiss колбэк закрытия диалога
+ * @param modifier модификатор
+ */
 @Composable
 fun FileImageDialog(
     image: String,
@@ -28,6 +35,13 @@ fun FileImageDialog(
     }
 }
 
+/**
+ * Диалог отображения изображения из URI.
+ *
+ * @param imageUri строковый uri изображения
+ * @param onDismiss колбэк закрытия диалога
+ * @param modifier модификатор
+ */
 @Composable
 fun UriImageDialog(
     imageUri: String,

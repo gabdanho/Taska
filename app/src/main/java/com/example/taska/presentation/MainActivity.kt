@@ -15,6 +15,13 @@ import com.example.taska.presentation.screens.main.MainScreen
 import com.example.taska.presentation.theme.TaskaTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Главная активность приложения, запускающая [MainScreen] и проверяющая необходимые разрешения.
+ *
+ * Проверяет:
+ *  - Разрешение на отправку уведомлений (POST_NOTIFICATIONS)
+ *  - Возможность планирования точных будильников (для Android S+)
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val requestPermissionLauncher =

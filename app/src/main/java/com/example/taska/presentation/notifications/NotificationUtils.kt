@@ -12,8 +12,20 @@ import kotlin.math.roundToInt
 
 private const val DATE_TIME_FORMATTER = "dd.MM.yyyy HH:mm"
 
+/**
+ * Утилиты для работы с уведомлениями и напоминаниями.
+ */
 object NotificationUtils {
 
+    /**
+     * Запланировать напоминание.
+     *
+     * @param context контекст
+     * @param id id напоминания
+     * @param text текст уведомления
+     * @param date дата напоминания (строка)
+     * @param time время напоминания (строка)
+     */
     fun scheduleReminder(context: Context, id: Int, text: String, date: String, time: String): Boolean {
         try {
             val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)
@@ -34,12 +46,25 @@ object NotificationUtils {
         }
     }
 
+    /**
+     * Отменить напоминание.
+     *
+     * @param context контекст
+     * @param id id напоминания
+     */
     fun cancelReminder(context: Context, id: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pendingIntent = getPendingIntent(context, id, "")
         alarmManager.cancel(pendingIntent)
     }
 
+    /**
+     * Создать PendingIntent для уведомления.
+     *
+     * @param context контекст
+     * @param id id напоминания
+     * @param text текст уведомления
+     */
     fun getPendingIntent(context: Context, id: Int, text: String): PendingIntent {
         val intent = Intent(context, NotificationBroadcastReceiver::class.java).apply {
             putExtra("text", text)
@@ -48,10 +73,17 @@ object NotificationUtils {
         return PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
     }
 
+    /** Сгенерировать случайный id напоминания. */
     fun generateReminderId(): Int {
         return (Math.random() * 1000000).roundToInt()
     }
 
+    /**
+     * Проверить, что дата/время напоминания в прошлом.
+     *
+     * @param date дата (строка)
+     * @param time время (строка)
+     */
     fun isReminderInPast(date: String, time: String): Boolean {
         val formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)
         val reminderDateTime = LocalDateTime.parse("$date $time", formatter)

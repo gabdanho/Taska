@@ -71,7 +71,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.taska.R
 import com.example.taska.presentation.components.FileImageDialog
 import com.example.taska.presentation.components.FileImageItem
-import com.example.taska.presentation.constants.TextFieldType
+import com.example.taska.presentation.model.TextFieldType
 import com.example.taska.presentation.model.task.Date
 import com.example.taska.presentation.components.InputTextField
 import com.example.taska.presentation.model.task.Reminder
@@ -92,6 +92,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+/**
+ * Экран списка задач.
+ *
+ * @param modifier модификатор
+ * @param viewModel ViewModel
+ */
 @Composable
 fun TasksScreen(
     modifier: Modifier = Modifier,

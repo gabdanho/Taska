@@ -10,6 +10,12 @@ import com.example.taska.presentation.navigation.NavigationAction
 import com.example.taska.presentation.navigation.ObserveAsEvents
 import com.example.taska.presentation.navigation.appGraph
 
+/**
+ * Основной экран приложения.
+ *
+ * @param modifier модификатор
+ * @param viewModel ViewModel
+ */
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,

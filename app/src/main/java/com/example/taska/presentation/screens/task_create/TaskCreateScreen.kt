@@ -35,7 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.taska.R
-import com.example.taska.presentation.constants.TextFieldType
+import com.example.taska.presentation.model.TextFieldType
 import com.example.taska.presentation.components.InputTextField
 import com.example.taska.presentation.components.UriImageDialog
 import com.example.taska.presentation.components.UriImageItem
@@ -46,6 +46,13 @@ import com.example.taska.presentation.theme.FruitSalad
 import com.example.taska.presentation.theme.IconTint
 import com.example.taska.presentation.theme.defaultDimensions
 
+/**
+ * Экран создания новой задачи.
+ *
+ * @param date выбранная дата
+ * @param modifier модификатор
+ * @param viewModel ViewModel
+ */
 @Composable
 fun TaskCreateScreen(
     date: Date,

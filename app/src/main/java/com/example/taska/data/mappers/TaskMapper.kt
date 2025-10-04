@@ -3,6 +3,12 @@ package com.example.taska.data.mappers
 import com.example.taska.data.local.entity.Task
 import com.example.taska.domain.model.Task as TaskDomain
 
+/**
+ * Преобразует [TaskDomain] в [Task].
+ *
+ * @receiver [TaskDomain]
+ * @return [Task]
+ */
 fun TaskDomain.toDataLayer(): Task {
     return Task(
         id = id,
@@ -14,6 +20,12 @@ fun TaskDomain.toDataLayer(): Task {
     )
 }
 
+/**
+ * Преобразует [Task] в [TaskDomain].
+ *
+ * @receiver [Task]
+ * @return [TaskDomain]
+ */
 fun Task.toDomainLayer(): TaskDomain {
     return TaskDomain(
         id = id,

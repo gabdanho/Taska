@@ -15,12 +15,25 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import com.example.taska.presentation.constants.TextFieldType
+import com.example.taska.presentation.model.TextFieldType
 import com.example.taska.presentation.mappers.resources.StringToResourceIdMapperImpl
 import com.example.taska.presentation.theme.TextColor
 import com.example.taska.presentation.theme.TextPlaceholder
 import kotlinx.coroutines.delay
 
+/**
+ * Кастомное текстовое поле.
+ *
+ * @param value текущий текст
+ * @param modifier модификатор
+ * @param cursorDelayAnimation задержка мигания курсора
+ * @param typeField тип оформления поля
+ * @param maxLines максимальное число строк
+ * @param onValueChange действие при изменении текста
+ * @param enabled активно ли поле
+ * @param autoFocus автофокус при показе
+ * @param onLeaveFocus действие при потере фокуса
+ */
 @Composable
 fun InputTextField(
     value: String,

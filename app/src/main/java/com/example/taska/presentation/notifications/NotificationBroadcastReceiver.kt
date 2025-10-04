@@ -12,6 +12,9 @@ import androidx.core.app.NotificationManagerCompat
 import com.example.taska.R
 import com.example.taska.app.TaskaApplication
 
+/**
+ * Ресивер уведомлений о напоминаниях.
+ */
 class NotificationBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context != null) {

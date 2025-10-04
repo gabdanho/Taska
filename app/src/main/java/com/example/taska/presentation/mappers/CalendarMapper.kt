@@ -4,6 +4,11 @@ import com.example.taska.presentation.model.StringResNamePresentation
 import java.time.DayOfWeek
 import java.time.Month
 
+/**
+ * Конвертирует [Month] в [StringResNamePresentation].
+ *
+ * @return ресурс строки для названия месяца
+ */
 fun Month.convertToStringResName(): StringResNamePresentation {
     return when(this) {
         Month.JANUARY -> StringResNamePresentation.TEXT_JANUARY
@@ -21,6 +26,11 @@ fun Month.convertToStringResName(): StringResNamePresentation {
     }
 }
 
+/**
+ * Конвертирует [DayOfWeek] в [StringResNamePresentation].
+ *
+ * @return ресурс строки для названия дня недели
+ */
 fun DayOfWeek.convertToStringResName(): StringResNamePresentation {
     return when(this) {
         DayOfWeek.MONDAY -> StringResNamePresentation.TEXT_MONDAY

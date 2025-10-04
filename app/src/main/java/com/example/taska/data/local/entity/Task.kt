@@ -7,6 +7,16 @@ import com.example.taska.data.local.model.Reminder
 import java.time.DayOfWeek
 import java.time.Month
 
+/**
+ * Сущность задачи.
+ *
+ * @property id идентификатор задачи
+ * @property date дата задачи
+ * @property title заголовок
+ * @property description описание
+ * @property images список изображений
+ * @property reminders список напоминаний
+ */
 @Entity(tableName = "tasks")
 data class Task(
     @PrimaryKey(autoGenerate = true)

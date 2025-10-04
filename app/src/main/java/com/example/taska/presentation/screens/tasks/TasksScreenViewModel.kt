@@ -34,6 +34,13 @@ import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.collections.plus
 
+/**
+ * ViewModel для [TasksScreen].
+ *
+ * @param tasksRepository репозиторий задач
+ * @param imagesRepository репозиторий изображений
+ * @param navigator навигация между экранами
+ */
 @HiltViewModel
 class TasksScreenViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,
